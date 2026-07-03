@@ -19,8 +19,8 @@ public class BookService {
         book.setIsbn(bookRequestDto.getIsbn());
         book.setTitle(bookRequestDto.getTitle());
         book.setAvailableCopies(bookRequestDto.getAvailableCopies());
-        bookRepository.save(book);
-        return book;
+        Book bookSaved = bookRepository.save(book);
+        return bookSaved;
     }
     public Optional<Book> updateBook(BookRequestDto bookRequestDto, Long id){
 
@@ -36,7 +36,14 @@ public class BookService {
         });
         return book;
     }
+
+    private boolean validateBookId(Long id){
+        return id != null && id >= 0L;
+    }
+
     public void deleteBook(Long id){
+        boolean isIdValid = validateBookId(id);
+        if(!isIdValid) return;
         boolean isExist = bookRepository.existsById(id);
         if(!isExist) return;
         bookRepository.deleteById(id);
