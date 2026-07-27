@@ -19,6 +19,7 @@ public class BookService {
         book.setIsbn(bookRequestDto.getIsbn());
         book.setTitle(bookRequestDto.getTitle());
         book.setAvailableCopies(bookRequestDto.getAvailableCopies());
+        book.setPrice(bookRequestDto.getPrice());
         Book bookSaved = bookRepository.save(book);
         return bookSaved;
     }
@@ -32,6 +33,7 @@ public class BookService {
             b.setIsbn(bookRequestDto.getIsbn());
             b.setTitle(bookRequestDto.getTitle());
             b.setAvailableCopies(bookRequestDto.getAvailableCopies());
+            b.setPrice(bookRequestDto.getPrice());
             bookRepository.save(b);
         });
         return book;
@@ -52,5 +54,10 @@ public class BookService {
     public List<Book> getALlBooks(){
         List<Book> books = bookRepository.findAll();
         return books;
+    }
+
+    public Book getBook(Long bookId){
+        Optional<Book> book = bookRepository.findById(bookId);
+        return book.orElse(null);
     }
 }

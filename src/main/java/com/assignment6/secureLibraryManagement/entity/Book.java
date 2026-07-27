@@ -25,6 +25,8 @@ public class Book {
     @Column(unique = true)
     private String isbn;
 
+    private Integer price;
+
     @PositiveOrZero
     private int availableCopies;
 }

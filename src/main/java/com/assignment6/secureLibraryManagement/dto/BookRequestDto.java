@@ -10,5 +10,6 @@ public class BookRequestDto {
     private String title;
     private String author;
     private String isbn;
+    private Integer price;
     private int availableCopies;
 }

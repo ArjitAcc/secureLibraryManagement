@@ -39,4 +39,10 @@ public class AdminController {
         List<Book> books = bookService.getALlBooks();
         return ResponseEntity.ok(books);
     }
+
+    @GetMapping("/books/{bookId}")
+    public ResponseEntity<Book> getBook(@PathVariable Long bookId){
+        Book book = bookService.getBook(bookId);
+        return ResponseEntity.ok(book);
+    }
 }
