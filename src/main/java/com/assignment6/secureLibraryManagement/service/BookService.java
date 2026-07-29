@@ -1,6 +1,7 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.dto.BookRequestDto;
+import com.assignment6.secureLibraryManagement.dto.BookRequestJO;
+import com.assignment6.secureLibraryManagement.dto.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,30 +14,32 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BookService {
     private final BookRepository bookRepository;
-    public Book addBook(BookRequestDto bookRequestDto){
+    public BookResponseJO addBook(BookRequestJO bookRequestJO){
         Book book = new Book();
-        book.setAuthor(bookRequestDto.getAuthor());
-        book.setIsbn(bookRequestDto.getIsbn());
-        book.setTitle(bookRequestDto.getTitle());
-        book.setAvailableCopies(bookRequestDto.getAvailableCopies());
-        book.setPrice(bookRequestDto.getPrice());
+        book.setAuthor(bookRequestJO.author());
+        book.setIsbn(bookRequestJO.isbn());
+        book.setTitle(bookRequestJO.title());
+        book.setAvailableCopies(bookRequestJO.availableCopies());
+        book.setPrice(bookRequestJO.price());
         Book bookSaved = bookRepository.save(book);
-        return bookSaved;
+        return new BookResponseJO(bookSaved.getId(), bookSaved.getTitle(), bookSaved.getAuthor(), bookSaved.getIsbn(), bookSaved.getPrice(), bookSaved.getAvailableCopies());
     }
-    public Optional<Book> updateBook(BookRequestDto bookRequestDto, Long id){
+
+    public Optional<BookResponseJO> updateBook(BookRequestJO bookRequestJO, Long id){
 
         boolean isExist = bookRepository.existsById(id);
         if(!isExist) return Optional.empty();
         Optional<Book> book = bookRepository.findById(id);
-        book.ifPresent(b -> {
-            b.setAuthor(bookRequestDto.getAuthor());
-            b.setIsbn(bookRequestDto.getIsbn());
-            b.setTitle(bookRequestDto.getTitle());
-            b.setAvailableCopies(bookRequestDto.getAvailableCopies());
-            b.setPrice(bookRequestDto.getPrice());
-            bookRepository.save(b);
+        Optional<BookResponseJO> bookResponseObject = book.map(b -> {
+            b.setAuthor(bookRequestJO.author());
+            b.setIsbn(bookRequestJO.isbn());
+            b.setTitle(bookRequestJO.title());
+            b.setAvailableCopies(bookRequestJO.availableCopies());
+            b.setPrice(bookRequestJO.price());
+            Book savedBook = bookRepository.save(b);
+            return new BookResponseJO(savedBook.getId(), savedBook.getTitle(), savedBook.getAuthor(), savedBook.getIsbn(), savedBook.getPrice(), savedBook.getAvailableCopies());
         });
-        return book;
+        return Optional.empty();
     }
 
     private boolean validateBookId(Long id){
@@ -51,13 +54,18 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
-    public List<Book> getALlBooks(){
+    public List<BookResponseJO> getALlBooks(){
         List<Book> books = bookRepository.findAll();
-        return books;
+        return books.stream().map((b) -> {
+            return new BookResponseJO(b.getId(), b.getTitle(), b.getAuthor(), b.getIsbn(), b.getPrice(), b.getAvailableCopies());
+        }).toList();
     }
 
-    public Book getBook(Long bookId){
+    public BookResponseJO getBook(Long bookId){
         Optional<Book> book = bookRepository.findById(bookId);
-        return book.orElse(null);
+        Optional<BookResponseJO> bookResponseObject = book.map((b) -> {
+            return new BookResponseJO(b.getId(), b.getTitle(), b.getAuthor(), b.getIsbn(), b.getPrice(), b.getAvailableCopies());
+        });
+        return bookResponseObject.orElse(null);
     }
 }

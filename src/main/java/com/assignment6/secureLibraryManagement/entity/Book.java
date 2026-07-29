@@ -25,7 +25,6 @@ public class Book {
     @Column(unique = true)
     private String isbn;
 
-    @NotBlank
     @Max(value=1000)
     @Positive
     private Integer price;

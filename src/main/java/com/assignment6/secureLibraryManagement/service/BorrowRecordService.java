@@ -1,5 +1,6 @@
 package com.assignment6.secureLibraryManagement.service;
 
+import com.assignment6.secureLibraryManagement.dto.BorrowRecordResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.entity.BorrowRecord;
 import com.assignment6.secureLibraryManagement.entity.BorrowStatus;
@@ -22,7 +23,7 @@ public class BorrowRecordService {
     private final BorrowRecordRepository borrowRecordRepository;
 
     @Transactional
-    public BorrowRecord borrowBook(String emailAddress, Long bookId) {
+    public BorrowRecordResponseJO borrowBook(String emailAddress, Long bookId) {
 
         User user = userRepository.findByEmailAddress(emailAddress)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -46,22 +47,28 @@ public class BorrowRecordService {
         record.setBorrowDate(LocalDateTime.now());
         record.setStatus(BorrowStatus.BORROWED);
 
-        return borrowRecordRepository.save(record);
+        BorrowRecord recordSaved = borrowRecordRepository.save(record);
+        bookRepository.save(book);
+        return new BorrowRecordResponseJO(recordSaved.getId(), recordSaved.getUser(), recordSaved.getBook(), recordSaved.getBorrowDate(), recordSaved.getReturnDate(), recordSaved.getStatus());
     }
 
-    public BorrowRecord returnBook(Long borrowRecordId){
+    public BorrowRecordResponseJO returnBook(Long borrowRecordId){
         BorrowRecord borrowRecord = borrowRecordRepository.findById(borrowRecordId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Book book = borrowRecord.getBook();
         book.setAvailableCopies(book.getAvailableCopies() + 1);
+        bookRepository.save(book);
         borrowRecord.setReturnDate(LocalDateTime.now());
         borrowRecord.setStatus(BorrowStatus.RETURNED);
-        return borrowRecord;
+        return new BorrowRecordResponseJO(borrowRecord.getId(), borrowRecord.getUser(), borrowRecord.getBook(), borrowRecord.getBorrowDate(), borrowRecord.getReturnDate(), borrowRecord.getStatus());
     }
 
-    public List<BorrowRecord> getBookRecords(String emailAddress){
+    public List<BorrowRecordResponseJO> getBookRecords(String emailAddress){
         List<BorrowRecord> borrowRecords = borrowRecordRepository.findByUserEmailAddress(emailAddress);
-        return borrowRecords;
+        List<BorrowRecordResponseJO> responseRecords = borrowRecords.stream().map((r) -> {
+            return new BorrowRecordResponseJO(r.getId(), r.getUser(), r.getBook(), r.getBorrowDate(), r.getReturnDate(), r.getStatus());
+        }).toList();
+        return responseRecords;
     }
 }
 

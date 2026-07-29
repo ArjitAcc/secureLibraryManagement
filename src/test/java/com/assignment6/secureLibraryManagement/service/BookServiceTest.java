@@ -1,6 +1,6 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.dto.BookRequestDto;
+import com.assignment6.secureLibraryManagement.dto.BookRequestJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,11 +26,11 @@ class BookServiceTest {
     BookService bookService;
     @Test
     void addBookShouldAddBookSuccessfully(){
-        BookRequestDto bookRequestDto = new BookRequestDto();
-        bookRequestDto.setTitle("DTO Title");
-        bookRequestDto.setAuthor("DTO Author");
-        bookRequestDto.setIsbn("DTO ISBN");
-        bookRequestDto.setAvailableCopies(1);
+        BookRequestJO bookRequestJO = new BookRequestJO();
+        bookRequestJO.setTitle("DTO Title");
+        bookRequestJO.setAuthor("DTO Author");
+        bookRequestJO.setIsbn("DTO ISBN");
+        bookRequestJO.setAvailableCopies(1);
         Book savedBook = new Book();
         savedBook.setId(1001L);
         savedBook.setTitle("Book Title");
@@ -40,7 +40,7 @@ class BookServiceTest {
 
         when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
 
-        Book book = bookService.addBook(bookRequestDto);
+        Book book = bookService.addBook(bookRequestJO);
 
         assertNotNull(savedBook);
         assertEquals(savedBook.getId(), book.getId());
@@ -123,11 +123,11 @@ class BookServiceTest {
         book.setAvailableCopies(1);
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
 
-        BookRequestDto bookRequestDto = new BookRequestDto();
-        bookRequestDto.setTitle("Book Updated Title");
-        bookRequestDto.setAuthor("Book Author");
-        bookRequestDto.setIsbn("Book ISBN");
-        bookRequestDto.setAvailableCopies(1);
+        BookRequestJO bookRequestJO = new BookRequestJO();
+        bookRequestJO.setTitle("Book Updated Title");
+        bookRequestJO.setAuthor("Book Author");
+        bookRequestJO.setIsbn("Book ISBN");
+        bookRequestJO.setAvailableCopies(1);
 
         Book savedBook = new Book();
         savedBook.setId(1001L);
@@ -137,7 +137,7 @@ class BookServiceTest {
         savedBook.setAvailableCopies(1);
 
         when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
-        Optional<Book> updatedBook = bookService.updateBook(bookRequestDto, id);
+        Optional<Book> updatedBook = bookService.updateBook(bookRequestJO, id);
 
         assertNotNull(updatedBook);
         assertEquals(savedBook.getId(), updatedBook.get().getId());

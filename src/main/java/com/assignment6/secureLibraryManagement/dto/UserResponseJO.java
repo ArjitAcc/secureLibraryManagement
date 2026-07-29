@@ -6,12 +6,11 @@ import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Data
-@AllArgsConstructor
-public class UserResponseDto {
-    private String name;
-    private String emailAddress;
-    private String address;
+public record UserResponseJO(
+    String name,
+    String emailAddress,
+    String address,
     @Enumerated(EnumType.STRING)
-    private Role role;
+    Role role
+) {
 }

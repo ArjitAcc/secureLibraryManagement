@@ -1,7 +1,7 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.dto.UserRequestDto;
-import com.assignment6.secureLibraryManagement.dto.UserResponseDto;
+import com.assignment6.secureLibraryManagement.dto.UserRequestJO;
+import com.assignment6.secureLibraryManagement.dto.UserResponseJO;
 import com.assignment6.secureLibraryManagement.entity.User;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,33 +24,33 @@ public class UserService {
         return authentication.getName().equals(emailAddress);
     }
 
-    public Long addBook(UserRequestDto userRequestDto){
-        User user = new User(userRequestDto.getName(), userRequestDto.getEmailAddress(), userRequestDto.getAddress(), userRequestDto.getRole(), passwordEncoder.encode(userRequestDto.getPassword()));
+    public Long addBook(UserRequestJO userRequestJO){
+        User user = new User(userRequestJO.name(), userRequestJO.emailAddress(), userRequestJO.address(), userRequestJO.role(), passwordEncoder.encode(userRequestJO.password()));
         String userRole = String.valueOf(user.getRole());
         User savedUser = userRepository.save(user);
         return savedUser.getId();
     }
-    public void updateUser(UserRequestDto userRequestDto, Long userId, Authentication authentication){
+    public void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication){
         Optional<User> user = userRepository.findById(userId);
         if(!user.isEmpty()) return;
-        boolean isAuthorised = isAuthorised(userRequestDto.getEmailAddress(), authentication);
+        boolean isAuthorised = isAuthorised(userRequestJO.emailAddress(), authentication);
         if(!isAuthorised) return;
         user.ifPresent(u -> {
-            u.setRole(userRequestDto.getRole());
-            u.setName(userRequestDto.getName());
-            u.setAddress(userRequestDto.getAddress());
-            u.setEmailAddress(userRequestDto.getEmailAddress());
-            u.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+            u.setRole(userRequestJO.role());
+            u.setName(userRequestJO.name());
+            u.setAddress(userRequestJO.address());
+            u.setEmailAddress(userRequestJO.emailAddress());
+            u.setPassword(passwordEncoder.encode(userRequestJO.password()));
             userRepository.save(u);
         });
     }
-    public UserResponseDto getUser(Long userId, Authentication authentication){
+    public UserResponseJO getUser(Long userId, Authentication authentication){
         Optional<User> userOptional = userRepository.findById(userId);
         User user = userOptional.orElse(null);
         if(user == null) return null;
         boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
         if(!isAuthorised) return null;
-        UserResponseDto userReturned = new UserResponseDto(user.getName(), user.getEmailAddress(), user.getAddress(), user.getRole());
+        UserResponseJO userReturned = new UserResponseJO(user.getName(), user.getEmailAddress(), user.getAddress(), user.getRole());
         return userReturned;
     }
     public void removeUser(Long userId, Authentication authentication){

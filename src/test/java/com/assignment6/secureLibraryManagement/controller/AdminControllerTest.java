@@ -1,6 +1,6 @@
 package com.assignment6.secureLibraryManagement.controller;
 
-import com.assignment6.secureLibraryManagement.dto.BookRequestDto;
+import com.assignment6.secureLibraryManagement.dto.BookRequestJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @WebMvcTest(AdminController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AdminControllerTest {
@@ -41,7 +39,7 @@ class AdminControllerTest {
     private BookService bookService;
 
     Book book = new Book();
-    BookRequestDto bookRequestDto = new BookRequestDto();
+    BookRequestJO bookRequestJO = new BookRequestJO();
 
     @BeforeEach
     void init(){
@@ -50,10 +48,10 @@ class AdminControllerTest {
         book.setAuthor("Book Author");
         book.setIsbn("Book ISBN");
         book.setAvailableCopies(2);
-        bookRequestDto.setTitle("Book Title");
-        bookRequestDto.setAuthor("Book Author");
-        bookRequestDto.setIsbn("Book ISBN");
-        bookRequestDto.setAvailableCopies(2);
+        bookRequestJO.setTitle("Book Title");
+        bookRequestJO.setAuthor("Book Author");
+        bookRequestJO.setIsbn("Book ISBN");
+        bookRequestJO.setAvailableCopies(2);
     }
 
     @Test
@@ -89,9 +87,9 @@ class AdminControllerTest {
 
     @Test
     void createBookShouldCreateBookSuccessfully() throws Exception {
-        String requestJson = objectMapper.writeValueAsString(bookRequestDto);
+        String requestJson = objectMapper.writeValueAsString(bookRequestJO);
         String expectedJson = objectMapper.writeValueAsString(book);
-        when(bookService.addBook(bookRequestDto)).thenReturn(book);
+        when(bookService.addBook(bookRequestJO)).thenReturn(book);
         mockMvc.perform(post("/admin/books")
                         .content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -101,11 +99,11 @@ class AdminControllerTest {
 
     @Test
     void updateBookShouldUpdateBookSuccessfully() throws Exception {
-        String requestJson = objectMapper.writeValueAsString(bookRequestDto);
+        String requestJson = objectMapper.writeValueAsString(bookRequestJO);
         Long id = 1001L;
         book.setTitle("Updated Book Title");
         String expectedJson = objectMapper.writeValueAsString(book);
-        when(bookService.updateBook(bookRequestDto, id)).thenReturn(Optional.of(book));
+        when(bookService.updateBook(bookRequestJO, id)).thenReturn(Optional.of(book));
         mockMvc.perform(put("/admin/books/"+id)
                         .content(requestJson)
                         .contentType(MediaType.APPLICATION_JSON))

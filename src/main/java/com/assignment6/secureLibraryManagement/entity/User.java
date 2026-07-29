@@ -1,11 +1,6 @@
 package com.assignment6.secureLibraryManagement.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,20 +16,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Pattern(regexp = "^[A-Za-z]+$")
-    @Size(min = 3, max = 50)
     private String name;
 
     @Column(unique = true)
-    @NotBlank
-    @Email
     private String emailAddress;
 
-    @NotBlank
     private String address;
 
-    @NotBlank
     private String password;
 
     @Enumerated(EnumType.STRING)

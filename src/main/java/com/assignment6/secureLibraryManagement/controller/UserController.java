@@ -1,5 +1,6 @@
 package com.assignment6.secureLibraryManagement.controller;
 
+import com.assignment6.secureLibraryManagement.dto.BorrowRecordResponseJO;
 import com.assignment6.secureLibraryManagement.entity.BorrowRecord;
 import com.assignment6.secureLibraryManagement.service.BorrowRecordService;
 import lombok.RequiredArgsConstructor;
@@ -17,20 +18,20 @@ public class UserController {
     private final BorrowRecordService borrowRecordService;
 
     @PostMapping("/borrow/{bookId}")
-    public ResponseEntity<BorrowRecord> createBorrowRecord(@PathVariable Long bookId, Principal principal){
-        BorrowRecord borrowRecord = borrowRecordService.borrowBook(principal.getName(), bookId);
-        return ResponseEntity.ok(borrowRecord);
+    public ResponseEntity<BorrowRecordResponseJO> createBorrowRecord(@PathVariable Long bookId, Principal principal){
+        BorrowRecordResponseJO borrowRecordResponse = borrowRecordService.borrowBook(principal.getName(), bookId);
+        return ResponseEntity.ok(borrowRecordResponse);
     }
 
     @PutMapping("/return/{borrowId}")
-    public ResponseEntity<BorrowRecord> updateBorrowRecordToReturn(@PathVariable Long borrowId){
-        BorrowRecord borrowRecord = borrowRecordService.returnBook(borrowId);
-        return ResponseEntity.ok(borrowRecord);
+    public ResponseEntity<BorrowRecordResponseJO> updateBorrowRecordToReturn(@PathVariable Long borrowId){
+        BorrowRecordResponseJO borrowRecordResponse = borrowRecordService.returnBook(borrowId);
+        return ResponseEntity.ok(borrowRecordResponse);
     }
 
-    @GetMapping("/user/my-books")
-    public ResponseEntity<List<BorrowRecord>> getBorrowBooks(Principal principal){
-        List<BorrowRecord> borrowBooks = borrowRecordService.getBookRecords(principal.getName());
+    @GetMapping("/my-books")
+    public ResponseEntity<List<BorrowRecordResponseJO>> getBorrowBooks(Principal principal){
+        List<BorrowRecordResponseJO> borrowBooks = borrowRecordService.getBookRecords(principal.getName());
         return ResponseEntity.ok(borrowBooks);
     }
 }
