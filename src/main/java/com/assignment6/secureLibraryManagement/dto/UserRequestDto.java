@@ -12,6 +12,7 @@ public class UserRequestDto {
     private String name;
     private String emailAddress;
     private String address;
+    private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
 }

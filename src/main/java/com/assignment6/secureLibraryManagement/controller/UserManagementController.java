@@ -6,7 +6,10 @@ import com.assignment6.secureLibraryManagement.entity.User;
 import com.assignment6.secureLibraryManagement.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,19 +24,19 @@ public class UserManagementController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponseDto> getUser(@PathVariable Long userId){
-        UserResponseDto userReturned = userService.getUser(userId);
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable Long userId, Authentication authentication){
+        UserResponseDto userReturned = userService.getUser(userId, authentication);
+        if(userReturned == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(userReturned);
     }
 
     @PutMapping("/{userId}")
-    public void updateUser(@RequestBody UserRequestDto userRequestDto, @PathVariable Long userId){
-        userService.updateUser(userRequestDto, userId);
-        return;
+    public void updateUser(@RequestBody UserRequestDto userRequestDto, @PathVariable Long userId, Authentication authentication){
+        userService.updateUser(userRequestDto, userId, authentication);
     }
 
     @DeleteMapping("/{userId}")
-    public void removeUser(@PathVariable Long userId){
-        userService.removeUser(userId);
+    public void removeUser(@PathVariable Long userId, Authentication authentication){
+        userService.removeUser(userId, authentication);
     }
 }

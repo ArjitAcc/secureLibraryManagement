@@ -22,9 +22,9 @@ public class BorrowRecordService {
     private final BorrowRecordRepository borrowRecordRepository;
 
     @Transactional
-    public BorrowRecord borrowBook(String username, Long bookId) {
+    public BorrowRecord borrowBook(String emailAddress, Long bookId) {
 
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByEmailAddress(emailAddress)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Book book = bookRepository.findById(bookId)
@@ -59,8 +59,8 @@ public class BorrowRecordService {
         return borrowRecord;
     }
 
-    public List<BorrowRecord> getBookRecords(String username){
-        List<BorrowRecord> borrowRecords = borrowRecordRepository.findByUserUsername(username);
+    public List<BorrowRecord> getBookRecords(String emailAddress){
+        List<BorrowRecord> borrowRecords = borrowRecordRepository.findByUserEmailAddress(emailAddress);
         return borrowRecords;
     }
 }

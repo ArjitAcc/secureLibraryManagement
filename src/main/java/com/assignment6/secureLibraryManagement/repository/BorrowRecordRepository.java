@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long> {
 
-    List<BorrowRecord> findByUserUsername(String username);
+    List<BorrowRecord> findByUserEmailAddress(String emailAddress);
 
     boolean existsByUserAndBookAndStatus(User user, Book book, BorrowStatus status);
 }
