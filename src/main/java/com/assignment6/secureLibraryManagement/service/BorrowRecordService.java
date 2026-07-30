@@ -5,6 +5,7 @@ import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.entity.BorrowRecord;
 import com.assignment6.secureLibraryManagement.entity.BorrowStatus;
 import com.assignment6.secureLibraryManagement.entity.User;
+import com.assignment6.secureLibraryManagement.exception.*;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import com.assignment6.secureLibraryManagement.repository.BorrowRecordRepository;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
@@ -21,22 +22,25 @@ public class BorrowRecordService {
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final BorrowRecordRepository borrowRecordRepository;
+    private final UserValidationService userValidationService;
 
     @Transactional
     public BorrowRecordResponseJO borrowBook(String emailAddress, Long bookId) {
 
         User user = userRepository.findByEmailAddress(emailAddress)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->  new UserNotFoundException("User not found!"));
+
+        userValidationService.validateUser(user.getId());
 
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new BookNotFoundException("Book not found"));
 
         if (book.getAvailableCopies() <= 0) {
-            throw new RuntimeException("Book not available");
+            throw new BookNotAvailableException("Book not available");
         }
 
         if (borrowRecordRepository.existsByUserAndBookAndStatus(user, book, BorrowStatus.BORROWED)) {
-            throw new RuntimeException("Already borrowed this book");
+            throw new AlreadyBorrowedException("Already borrowed this book");
         }
 
         book.setAvailableCopies(book.getAvailableCopies() - 1);
@@ -54,21 +58,20 @@ public class BorrowRecordService {
 
     public BorrowRecordResponseJO returnBook(Long borrowRecordId){
         BorrowRecord borrowRecord = borrowRecordRepository.findById(borrowRecordId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         Book book = borrowRecord.getBook();
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         bookRepository.save(book);
         borrowRecord.setReturnDate(LocalDateTime.now());
         borrowRecord.setStatus(BorrowStatus.RETURNED);
+        borrowRecordRepository.save(borrowRecord);
         return new BorrowRecordResponseJO(borrowRecord.getId(), borrowRecord.getUser(), borrowRecord.getBook(), borrowRecord.getBorrowDate(), borrowRecord.getReturnDate(), borrowRecord.getStatus());
     }
 
     public List<BorrowRecordResponseJO> getBookRecords(String emailAddress){
-        List<BorrowRecord> borrowRecords = borrowRecordRepository.findByUserEmailAddress(emailAddress);
-        List<BorrowRecordResponseJO> responseRecords = borrowRecords.stream().map((r) -> {
+        return borrowRecordRepository.findByUserEmailAddress(emailAddress).stream().map((r) -> {
             return new BorrowRecordResponseJO(r.getId(), r.getUser(), r.getBook(), r.getBorrowDate(), r.getReturnDate(), r.getStatus());
         }).toList();
-        return responseRecords;
     }
 }
 

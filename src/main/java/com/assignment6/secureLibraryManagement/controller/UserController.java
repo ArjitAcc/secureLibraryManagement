@@ -17,14 +17,14 @@ public class UserController {
 
     private final BorrowRecordService borrowRecordService;
 
-    @PostMapping("/borrow/{bookId}")
-    public ResponseEntity<BorrowRecordResponseJO> createBorrowRecord(@PathVariable Long bookId, Principal principal){
+    @PostMapping("/borrow/{book-id}")
+    public ResponseEntity<BorrowRecordResponseJO> createBorrowRecord(@PathVariable("book-id") Long bookId, Principal principal){
         BorrowRecordResponseJO borrowRecordResponse = borrowRecordService.borrowBook(principal.getName(), bookId);
         return ResponseEntity.ok(borrowRecordResponse);
     }
 
-    @PutMapping("/return/{borrowId}")
-    public ResponseEntity<BorrowRecordResponseJO> updateBorrowRecordToReturn(@PathVariable Long borrowId){
+    @PutMapping("/return/{borrow-id}")
+    public ResponseEntity<BorrowRecordResponseJO> updateBorrowRecordToReturn(@PathVariable("borrow-id") Long borrowId){
         BorrowRecordResponseJO borrowRecordResponse = borrowRecordService.returnBook(borrowId);
         return ResponseEntity.ok(borrowRecordResponse);
     }

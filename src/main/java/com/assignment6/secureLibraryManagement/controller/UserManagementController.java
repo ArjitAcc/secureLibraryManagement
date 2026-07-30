@@ -17,24 +17,29 @@ public class UserManagementController {
 
     @PostMapping("/")
     public ResponseEntity<Long> addUser(@Valid  @RequestBody UserRequestJO userRequestJO){
-        Long userSavedId = userService.addBook(userRequestJO);
+        Long userSavedId = userService.addUser(userRequestJO);
         return ResponseEntity.ok(userSavedId);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserResponseJO> getUser(@PathVariable Long userId, Authentication authentication){
+    @GetMapping("/{user-id}")
+    public ResponseEntity<UserResponseJO> getUser(@PathVariable("user-id") Long userId, Authentication authentication){
         UserResponseJO userReturned = userService.getUser(userId, authentication);
         if(userReturned == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(userReturned);
     }
 
-    @PutMapping("/{userId}")
-    public void updateUser(@Valid @RequestBody UserRequestJO userRequestJO, @PathVariable Long userId, Authentication authentication){
+    @PutMapping("/{user-id}")
+    public void updateUser(@Valid @RequestBody UserRequestJO userRequestJO, @PathVariable("user-id") Long userId, Authentication authentication){
         userService.updateUser(userRequestJO, userId, authentication);
     }
 
-    @DeleteMapping("/{userId}")
-    public void removeUser(@PathVariable Long userId, Authentication authentication){
-        userService.removeUser(userId, authentication);
+    @DeleteMapping("/{user-id}")
+    public void removeUser(@PathVariable("user-id") Long userId, Authentication authentication){
+        userService.softDelete(userId, authentication);
+    }
+
+    @PatchMapping("/{user-id}")
+    public void activateUser(@PathVariable("user-id") Long userId, Authentication authentication){
+        userService.setActive(userId, authentication);
     }
 }

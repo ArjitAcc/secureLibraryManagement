@@ -24,9 +24,8 @@ public class UserService {
         return authentication.getName().equals(emailAddress);
     }
 
-    public Long addBook(UserRequestJO userRequestJO){
-        User user = new User(userRequestJO.name(), userRequestJO.emailAddress(), userRequestJO.address(), userRequestJO.role(), passwordEncoder.encode(userRequestJO.password()));
-        String userRole = String.valueOf(user.getRole());
+    public Long addUser(UserRequestJO userRequestJO){
+        User user = new User(userRequestJO.name(), userRequestJO.emailAddress(), userRequestJO.address(), userRequestJO.role(), passwordEncoder.encode(userRequestJO.password()), userRequestJO.isActive());
         User savedUser = userRepository.save(user);
         return savedUser.getId();
     }
@@ -41,6 +40,7 @@ public class UserService {
             u.setAddress(userRequestJO.address());
             u.setEmailAddress(userRequestJO.emailAddress());
             u.setPassword(passwordEncoder.encode(userRequestJO.password()));
+            u.setActive(userRequestJO.isActive());
             userRepository.save(u);
         });
     }
@@ -50,15 +50,28 @@ public class UserService {
         if(user == null) return null;
         boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
         if(!isAuthorised) return null;
-        UserResponseJO userReturned = new UserResponseJO(user.getName(), user.getEmailAddress(), user.getAddress(), user.getRole());
+        UserResponseJO userReturned = new UserResponseJO(user.getName(), user.getEmailAddress(), user.getAddress(), user.getRole(), user.isActive());
         return userReturned;
     }
-    public void removeUser(Long userId, Authentication authentication){
+    public void softDelete(Long userId, Authentication authentication){
         Optional<User> userOptional = userRepository.findById(userId);
         User user = userOptional.orElse(null);
         if(user == null) return;
         boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
         if(!isAuthorised) return;
-        userRepository.deleteById(userId);
+        user.setActive(false);
+        userRepository.save(user);
+//        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
+//        if(!isAuthorised) return;
+//        userRepository.deleteById(userId);
+    }
+    public void setActive(Long userId, Authentication authentication){
+        Optional<User> userOptional = userRepository.findById(userId);
+        User user = userOptional.orElse(null);
+        if(user == null) return;
+        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
+        if(!isAuthorised) return;
+        user.setActive(true);
+        userRepository.save(user);
     }
 }

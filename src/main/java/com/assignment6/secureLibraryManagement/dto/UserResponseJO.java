@@ -11,6 +11,7 @@ public record UserResponseJO(
     String emailAddress,
     String address,
     @Enumerated(EnumType.STRING)
-    Role role
+    Role role,
+    boolean isActive
 ) {
 }

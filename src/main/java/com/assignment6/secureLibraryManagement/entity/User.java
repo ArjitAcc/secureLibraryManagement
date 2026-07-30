@@ -28,11 +28,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public User(String name, String emailAddress, String address, Role role, String password){
+    private boolean isActive = false;
+
+    public User(String name, String emailAddress, String address, Role role, String password, boolean isActive){
         this.name = name;
         this.emailAddress = emailAddress;
         this.address = address;
         this.role = role;
         this.password = password;
+        this.isActive = isActive;
     }
 }

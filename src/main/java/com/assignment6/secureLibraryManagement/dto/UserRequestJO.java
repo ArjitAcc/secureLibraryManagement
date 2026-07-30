@@ -25,6 +25,8 @@ public record UserRequestJO(
     String password,
 
     @Enumerated(EnumType.STRING)
-    Role role
+    Role role,
+
+    boolean isActive
 ) {
 }
