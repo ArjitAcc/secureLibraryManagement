@@ -26,8 +26,8 @@ public class AdminController {
 
     @PutMapping("/books/{book-id}")
     public ResponseEntity<BookResponseJO> updateBook(@Valid @PathVariable("book-id") Long bookId, @RequestBody BookRequestJO bookRequestJO){
-        Optional<BookResponseJO> book = bookService.updateBook(bookRequestJO, bookId);
-        return book.map(b -> ResponseEntity.ok(b)).orElseGet(() -> ResponseEntity.notFound().build());
+        BookResponseJO book = bookService.updateBook(bookRequestJO, bookId);
+        return ResponseEntity.ok(book);
     }
 
     @DeleteMapping("/books/{id}")

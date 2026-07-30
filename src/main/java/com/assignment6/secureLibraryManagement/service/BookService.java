@@ -3,6 +3,7 @@ package com.assignment6.secureLibraryManagement.service;
 import com.assignment6.secureLibraryManagement.dto.BookRequestJO;
 import com.assignment6.secureLibraryManagement.dto.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
+import com.assignment6.secureLibraryManagement.exception.BookNotFoundException;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,21 +26,15 @@ public class BookService {
         return new BookResponseJO(bookSaved.getId(), bookSaved.getTitle(), bookSaved.getAuthor(), bookSaved.getIsbn(), bookSaved.getPrice(), bookSaved.getAvailableCopies());
     }
 
-    public Optional<BookResponseJO> updateBook(BookRequestJO bookRequestJO, Long id){
-
-        boolean isExist = bookRepository.existsById(id);
-        if(!isExist) return Optional.empty();
-        Optional<Book> book = bookRepository.findById(id);
-        Optional<BookResponseJO> bookResponseObject = book.map(b -> {
-            b.setAuthor(bookRequestJO.author());
-            b.setIsbn(bookRequestJO.isbn());
-            b.setTitle(bookRequestJO.title());
-            b.setAvailableCopies(bookRequestJO.availableCopies());
-            b.setPrice(bookRequestJO.price());
-            Book savedBook = bookRepository.save(b);
-            return new BookResponseJO(savedBook.getId(), savedBook.getTitle(), savedBook.getAuthor(), savedBook.getIsbn(), savedBook.getPrice(), savedBook.getAvailableCopies());
-        });
-        return Optional.empty();
+    public BookResponseJO updateBook(BookRequestJO bookRequestJO, Long id){
+        Book book = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException("book not found!"));
+        book.setAuthor(bookRequestJO.author());
+        book.setIsbn(bookRequestJO.isbn());
+        book.setTitle(bookRequestJO.title());
+        book.setAvailableCopies(bookRequestJO.availableCopies());
+        book.setPrice(bookRequestJO.price());
+        Book savedBook = bookRepository.save(book);
+        return new BookResponseJO(savedBook.getId(), savedBook.getTitle(), savedBook.getAuthor(), savedBook.getIsbn(), savedBook.getPrice(), savedBook.getAvailableCopies());
     }
 
     private boolean validateBookId(Long id){
@@ -62,10 +57,7 @@ public class BookService {
     }
 
     public BookResponseJO getBook(Long bookId){
-        Optional<Book> book = bookRepository.findById(bookId);
-        Optional<BookResponseJO> bookResponseObject = book.map((b) -> {
-            return new BookResponseJO(b.getId(), b.getTitle(), b.getAuthor(), b.getIsbn(), b.getPrice(), b.getAvailableCopies());
-        });
-        return bookResponseObject.orElse(null);
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new BookNotFoundException("book not found!"));
+            return new BookResponseJO(book.getId(), book.getTitle(), book.getAuthor(), book.getIsbn(), book.getPrice(), book.getAvailableCopies());
     }
 }

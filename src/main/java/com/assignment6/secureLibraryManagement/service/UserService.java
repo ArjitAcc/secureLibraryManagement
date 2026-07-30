@@ -3,6 +3,8 @@ package com.assignment6.secureLibraryManagement.service;
 import com.assignment6.secureLibraryManagement.dto.UserRequestJO;
 import com.assignment6.secureLibraryManagement.dto.UserResponseJO;
 import com.assignment6.secureLibraryManagement.entity.User;
+import com.assignment6.secureLibraryManagement.exception.UnauthorizedRequestException;
+import com.assignment6.secureLibraryManagement.exception.UserNotFoundException;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -18,10 +20,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // store encrypted password
 
-    private boolean isAuthorised(String emailAddress, Authentication authentication){
+    private void authorize(String emailAddress, Authentication authentication){
         String role = authentication.getAuthorities().iterator().next().getAuthority();
-        if(role.equals("ADMIN")) return true;
-        return authentication.getName().equals(emailAddress);
+        assert role != null;
+        if(role.equals("ADMIN")) return;
+        if(!authentication.getName().equals(emailAddress)) {
+            throw new UnauthorizedRequestException("user does not have access to others data");
+        }
     }
 
     public Long addUser(UserRequestJO userRequestJO){
@@ -30,35 +35,24 @@ public class UserService {
         return savedUser.getId();
     }
     public void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication){
-        Optional<User> user = userRepository.findById(userId);
-        if(!user.isEmpty()) return;
-        boolean isAuthorised = isAuthorised(userRequestJO.emailAddress(), authentication);
-        if(!isAuthorised) return;
-        user.ifPresent(u -> {
-            u.setRole(userRequestJO.role());
-            u.setName(userRequestJO.name());
-            u.setAddress(userRequestJO.address());
-            u.setEmailAddress(userRequestJO.emailAddress());
-            u.setPassword(passwordEncoder.encode(userRequestJO.password()));
-            u.setActive(userRequestJO.isActive());
-            userRepository.save(u);
-        });
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
+        authorize(userRequestJO.emailAddress(), authentication);
+        user.setRole(userRequestJO.role());
+        user.setName(userRequestJO.name());
+        user.setAddress(userRequestJO.address());
+        user.setEmailAddress(userRequestJO.emailAddress());
+        user.setPassword(passwordEncoder.encode(userRequestJO.password()));
+        user.setActive(userRequestJO.isActive());
+        userRepository.save(user);
     }
     public UserResponseJO getUser(Long userId, Authentication authentication){
-        Optional<User> userOptional = userRepository.findById(userId);
-        User user = userOptional.orElse(null);
-        if(user == null) return null;
-        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
-        if(!isAuthorised) return null;
-        UserResponseJO userReturned = new UserResponseJO(user.getName(), user.getEmailAddress(), user.getAddress(), user.getRole(), user.isActive());
-        return userReturned;
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
+        authorize(user.getEmailAddress(), authentication);
+        return new UserResponseJO(user.getName(), user.getEmailAddress(), user.getAddress(), user.getRole(), user.isActive());
     }
     public void softDelete(Long userId, Authentication authentication){
-        Optional<User> userOptional = userRepository.findById(userId);
-        User user = userOptional.orElse(null);
-        if(user == null) return;
-        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
-        if(!isAuthorised) return;
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
+        authorize(user.getEmailAddress(), authentication);
         user.setActive(false);
         userRepository.save(user);
 //        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
@@ -66,11 +60,8 @@ public class UserService {
 //        userRepository.deleteById(userId);
     }
     public void setActive(Long userId, Authentication authentication){
-        Optional<User> userOptional = userRepository.findById(userId);
-        User user = userOptional.orElse(null);
-        if(user == null) return;
-        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
-        if(!isAuthorised) return;
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
+        authorize(user.getEmailAddress(), authentication);
         user.setActive(true);
         userRepository.save(user);
     }
