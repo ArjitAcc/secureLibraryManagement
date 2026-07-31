@@ -31,4 +31,7 @@ public class Book {
 
     @PositiveOrZero
     private int availableCopies;
+
+    public void set() {
+    }
 }
