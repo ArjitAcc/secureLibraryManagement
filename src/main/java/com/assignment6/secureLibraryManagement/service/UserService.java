@@ -36,7 +36,7 @@ public class UserService {
     }
     public void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(userRequestJO.emailAddress(), authentication);
+        authorize(user.getEmailAddress(), authentication);
         user.setRole(userRequestJO.role());
         user.setName(userRequestJO.name());
         user.setAddress(userRequestJO.address());
