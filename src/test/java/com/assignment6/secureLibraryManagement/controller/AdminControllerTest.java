@@ -1,30 +1,13 @@
 package com.assignment6.secureLibraryManagement.controller;
 
-import com.assignment6.secureLibraryManagement.dto.BookRequestJO;
-import com.assignment6.secureLibraryManagement.entity.Book;
-import com.assignment6.secureLibraryManagement.service.BookService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
 // For HTTP Methods (get, post, put, delete, etc.)
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 // For checking HTTP Status (status().isOk(), status().isNotFound(), etc.)
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // For checking the response content or JSON properties
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @WebMvcTest(AdminController.class)
 @AutoConfigureMockMvc(addFilters = false)

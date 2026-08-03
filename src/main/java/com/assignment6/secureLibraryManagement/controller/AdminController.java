@@ -1,8 +1,7 @@
 package com.assignment6.secureLibraryManagement.controller;
 
-import com.assignment6.secureLibraryManagement.dto.BookRequestJO;
-import com.assignment6.secureLibraryManagement.dto.BookResponseJO;
-import com.assignment6.secureLibraryManagement.entity.Book;
+import com.assignment6.secureLibraryManagement.JO.BookRequestJO;
+import com.assignment6.secureLibraryManagement.JO.BookResponseJO;
 import com.assignment6.secureLibraryManagement.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/admin")

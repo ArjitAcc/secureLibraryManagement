@@ -1,6 +1,4 @@
-package com.assignment6.secureLibraryManagement.dto;
-
-import jakarta.validation.constraints.*;
+package com.assignment6.secureLibraryManagement.JO;
 
 public record BookResponseJO(
         Long id,

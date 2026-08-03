@@ -1,4 +1,4 @@
-package com.assignment6.secureLibraryManagement.dto;
+package com.assignment6.secureLibraryManagement.JO;
 
 
 import jakarta.validation.constraints.*;

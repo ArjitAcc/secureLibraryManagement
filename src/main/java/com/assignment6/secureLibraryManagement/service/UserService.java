@@ -1,7 +1,7 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.dto.UserRequestJO;
-import com.assignment6.secureLibraryManagement.dto.UserResponseJO;
+import com.assignment6.secureLibraryManagement.JO.UserRequestJO;
+import com.assignment6.secureLibraryManagement.JO.UserResponseJO;
 import com.assignment6.secureLibraryManagement.entity.User;
 import com.assignment6.secureLibraryManagement.exception.UnauthorizedRequestException;
 import com.assignment6.secureLibraryManagement.exception.UserNotFoundException;
@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

@@ -1,10 +1,12 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.dto.BookRequestJO;
-import com.assignment6.secureLibraryManagement.dto.BookResponseJO;
+import com.assignment6.secureLibraryManagement.JO.BookRequestJO;
+import com.assignment6.secureLibraryManagement.JO.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import static org.junit.jupiter.api.Assertions.*;
+
+import com.assignment6.secureLibraryManagement.service.impl.BookServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,7 +26,7 @@ class BookServiceTest {
     @Mock
     BookRepository bookRepository;
     @InjectMocks
-    BookService bookService;
+    BookServiceImpl bookService;
     @Test
     void addBookShouldAddBookSuccessfully(){
         BookRequestJO bookRequestJO = new BookRequestJO("DTO Title", "DTO Author", "DTO ISBN", 800, 2);

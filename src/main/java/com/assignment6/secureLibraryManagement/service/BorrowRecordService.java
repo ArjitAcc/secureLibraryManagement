@@ -1,6 +1,6 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.dto.BorrowRecordResponseJO;
+import com.assignment6.secureLibraryManagement.JO.BorrowRecordResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.entity.BorrowRecord;
 import com.assignment6.secureLibraryManagement.entity.BorrowStatus;
