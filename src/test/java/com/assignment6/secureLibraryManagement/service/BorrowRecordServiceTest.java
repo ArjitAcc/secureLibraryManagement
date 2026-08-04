@@ -5,6 +5,7 @@ import com.assignment6.secureLibraryManagement.entity.*;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import com.assignment6.secureLibraryManagement.repository.BorrowRecordRepository;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
+import com.assignment6.secureLibraryManagement.service.impl.BorrowRecordServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +33,7 @@ class BorrowRecordServiceTest {
     @Mock
     UserValidationService userValidationService;
     @InjectMocks
-    BorrowRecordService borrowRecordService;
+    BorrowRecordServiceImpl borrowRecordService;
 
     User user;
     Book book;

@@ -29,7 +29,7 @@ class BookServiceTest {
     BookServiceImpl bookService;
     @Test
     void addBookShouldAddBookSuccessfully(){
-        BookRequestJO bookRequestJO = new BookRequestJO("DTO Title", "DTO Author", "DTO ISBN", 800, 2);
+//        BookRequestJO bookRequestJO = new BookRequestJO("DTO Title", "DTO Author", "DTO ISBN", 800, 2);
         Book savedBook = new Book();
         savedBook.setId(1001L);
         savedBook.setTitle("Book Title");
@@ -39,7 +39,7 @@ class BookServiceTest {
         savedBook.setAvailableCopies(2);
         when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
 
-        BookResponseJO book = bookService.addBook(bookRequestJO);
+        BookResponseJO book = bookService.addBook(savedBook);
 
         assertNotNull(savedBook);
         assertEquals(savedBook.getId(), book.id());

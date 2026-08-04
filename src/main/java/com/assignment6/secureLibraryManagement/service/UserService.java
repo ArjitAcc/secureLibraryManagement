@@ -5,6 +5,7 @@ import com.assignment6.secureLibraryManagement.jo.UserResponseJO;
 import com.assignment6.secureLibraryManagement.entity.User;
 import com.assignment6.secureLibraryManagement.exception.UnauthorizedRequestException;
 import com.assignment6.secureLibraryManagement.exception.UserNotFoundException;
+import com.assignment6.secureLibraryManagement.mapper.UserJOMapper;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // store encrypted password
+    private final UserJOMapper userJOMapper;
 
     private void authorize(String emailAddress, Authentication authentication){
         String role = authentication.getAuthorities().iterator().next().getAuthority();
@@ -28,25 +30,21 @@ public class UserService {
     }
 
     public Long addUser(UserRequestJO userRequestJO){
-        User user = new User(userRequestJO.name(), userRequestJO.emailAddress(), userRequestJO.address(), userRequestJO.role(), passwordEncoder.encode(userRequestJO.password()), userRequestJO.isActive());
+        User user = new User();
+        userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
         User savedUser = userRepository.save(user);
         return savedUser.getId();
     }
     public void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
         authorize(user.getEmailAddress(), authentication);
-        user.setRole(userRequestJO.role());
-        user.setName(userRequestJO.name());
-        user.setAddress(userRequestJO.address());
-        user.setEmailAddress(userRequestJO.emailAddress());
-        user.setPassword(passwordEncoder.encode(userRequestJO.password()));
-        user.setActive(userRequestJO.isActive());
+        userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
         userRepository.save(user);
     }
     public UserResponseJO getUser(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
         authorize(user.getEmailAddress(), authentication);
-        return new UserResponseJO(user.getName(), user.getEmailAddress(), user.getAddress(), user.getRole(), user.isActive());
+        return userJOMapper.mapToPOJO(user);
     }
     public void softDelete(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
