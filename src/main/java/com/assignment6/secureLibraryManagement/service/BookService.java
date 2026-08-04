@@ -7,13 +7,13 @@ import com.assignment6.secureLibraryManagement.entity.Book;
 import java.util.List;
 
 public interface BookService {
-    public BookResponseJO addBook(Book book);
+    BookResponseJO addBook(Book book);
 
-    public BookResponseJO updateBook(BookRequestJO bookRequestJO, Long id);
+    BookResponseJO updateBook(BookRequestJO bookRequestJO, Long id);
 
-    public void deleteBook(Long id);
+    void deleteBook(Long id);
 
-    public List<BookResponseJO> getALlBooks();
+    List<BookResponseJO> getALlBooks();
 
-    public BookResponseJO getBook(Long bookId);
+    BookResponseJO getBook(Long bookId);
 }

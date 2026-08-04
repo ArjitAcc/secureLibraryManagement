@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class UserValidationService {
     private final UserRepository userRepository;
 
-    void validateUser(Long userId){
+    public void validateUser(Long userId){
         userRepository.findById(userId).filter(User::isActive).orElseThrow(()-> new UserNotActiveException("User not active"));
     }
 }
