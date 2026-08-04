@@ -1,7 +1,7 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.JO.UserRequestJO;
-import com.assignment6.secureLibraryManagement.JO.UserResponseJO;
+import com.assignment6.secureLibraryManagement.jo.UserRequestJO;
+import com.assignment6.secureLibraryManagement.jo.UserResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Role;
 import com.assignment6.secureLibraryManagement.entity.User;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;

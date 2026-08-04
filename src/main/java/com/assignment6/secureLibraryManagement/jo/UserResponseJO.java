@@ -1,4 +1,4 @@
-package com.assignment6.secureLibraryManagement.JO;
+package com.assignment6.secureLibraryManagement.jo;
 
 import com.assignment6.secureLibraryManagement.entity.Role;
 import jakarta.persistence.EnumType;

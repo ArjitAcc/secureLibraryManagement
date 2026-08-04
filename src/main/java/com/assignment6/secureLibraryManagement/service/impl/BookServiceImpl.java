@@ -1,7 +1,7 @@
 package com.assignment6.secureLibraryManagement.service.impl;
 
-import com.assignment6.secureLibraryManagement.JO.BookRequestJO;
-import com.assignment6.secureLibraryManagement.JO.BookResponseJO;
+import com.assignment6.secureLibraryManagement.jo.BookRequestJO;
+import com.assignment6.secureLibraryManagement.jo.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.exception.BookNotFoundException;
 import com.assignment6.secureLibraryManagement.mapper.BookJOMapper;
@@ -17,9 +17,7 @@ import java.util.List;
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookJOMapper bookJOMapper;
-    public BookResponseJO addBook(BookRequestJO bookRequestJO){
-        Book book = new Book();
-        bookJOMapper.mapFromJO(bookRequestJO, book);
+    public BookResponseJO addBook(Book book){
         Book bookSaved = bookRepository.save(book);
         return bookJOMapper.mapToPOJO(bookSaved);
     }

@@ -1,7 +1,7 @@
 package com.assignment6.secureLibraryManagement.mapper;
 
-import com.assignment6.secureLibraryManagement.JO.BookRequestJO;
-import com.assignment6.secureLibraryManagement.JO.BookResponseJO;
+import com.assignment6.secureLibraryManagement.jo.BookRequestJO;
+import com.assignment6.secureLibraryManagement.jo.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import org.springframework.stereotype.Component;
 

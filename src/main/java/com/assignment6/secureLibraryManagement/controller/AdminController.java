@@ -1,7 +1,9 @@
 package com.assignment6.secureLibraryManagement.controller;
 
-import com.assignment6.secureLibraryManagement.JO.BookRequestJO;
-import com.assignment6.secureLibraryManagement.JO.BookResponseJO;
+import com.assignment6.secureLibraryManagement.jo.BookRequestJO;
+import com.assignment6.secureLibraryManagement.jo.BookResponseJO;
+import com.assignment6.secureLibraryManagement.entity.Book;
+import com.assignment6.secureLibraryManagement.mapper.BookJOMapper;
 import com.assignment6.secureLibraryManagement.service.BookService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +17,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
     private final BookService bookService;
+    public final BookJOMapper bookJOMapper;
 
     @PostMapping("/books")
     public ResponseEntity<BookResponseJO> createBook(@Valid  @RequestBody BookRequestJO bookRequestJO){
-        BookResponseJO book = bookService.addBook(bookRequestJO);
-        return ResponseEntity.ok(book);
+        Book book = new Book();
+        bookJOMapper.mapFromJO(bookRequestJO, book);
+        BookResponseJO bookReturned = bookService.addBook(book);
+        return ResponseEntity.ok(bookReturned);
     }
 
     @PutMapping("/books/{book-id}")

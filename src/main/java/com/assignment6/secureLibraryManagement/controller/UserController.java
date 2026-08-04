@@ -1,6 +1,6 @@
 package com.assignment6.secureLibraryManagement.controller;
 
-import com.assignment6.secureLibraryManagement.JO.BorrowRecordResponseJO;
+import com.assignment6.secureLibraryManagement.jo.BorrowRecordResponseJO;
 import com.assignment6.secureLibraryManagement.service.BorrowRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,11 +1,12 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.JO.BorrowRecordResponseJO;
+import com.assignment6.secureLibraryManagement.jo.BorrowRecordResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.entity.BorrowRecord;
 import com.assignment6.secureLibraryManagement.entity.BorrowStatus;
 import com.assignment6.secureLibraryManagement.entity.User;
 import com.assignment6.secureLibraryManagement.exception.*;
+import com.assignment6.secureLibraryManagement.mapper.BorrowRecordJOMapper;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import com.assignment6.secureLibraryManagement.repository.BorrowRecordRepository;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
@@ -23,6 +24,7 @@ public class BorrowRecordService {
     private final BookRepository bookRepository;
     private final BorrowRecordRepository borrowRecordRepository;
     private final UserValidationService userValidationService;
+    private final BorrowRecordJOMapper borrowRecordJOMapper;
 
     @Transactional
     public BorrowRecordResponseJO borrowBook(String emailAddress, Long bookId) {
@@ -53,7 +55,7 @@ public class BorrowRecordService {
 
         BorrowRecord recordSaved = borrowRecordRepository.save(record);
         bookRepository.save(book);
-        return new BorrowRecordResponseJO(recordSaved.getId(), recordSaved.getUser(), recordSaved.getBook(), recordSaved.getBorrowDate(), recordSaved.getReturnDate(), recordSaved.getStatus());
+        return borrowRecordJOMapper.mapToPOJO(recordSaved);
     }
 
     public BorrowRecordResponseJO returnBook(Long borrowRecordId){
@@ -65,13 +67,11 @@ public class BorrowRecordService {
         borrowRecord.setReturnDate(LocalDateTime.now());
         borrowRecord.setStatus(BorrowStatus.RETURNED);
         borrowRecordRepository.save(borrowRecord);
-        return new BorrowRecordResponseJO(borrowRecord.getId(), borrowRecord.getUser(), borrowRecord.getBook(), borrowRecord.getBorrowDate(), borrowRecord.getReturnDate(), borrowRecord.getStatus());
+        return borrowRecordJOMapper.mapToPOJO(borrowRecord);
     }
 
     public List<BorrowRecordResponseJO> getBookRecords(String emailAddress){
-        return borrowRecordRepository.findByUserEmailAddress(emailAddress).stream().map((r) -> {
-            return new BorrowRecordResponseJO(r.getId(), r.getUser(), r.getBook(), r.getBorrowDate(), r.getReturnDate(), r.getStatus());
-        }).toList();
+        return borrowRecordRepository.findByUserEmailAddress(emailAddress).stream().map(borrowRecordJOMapper::mapToPOJO).toList();
     }
 }
 

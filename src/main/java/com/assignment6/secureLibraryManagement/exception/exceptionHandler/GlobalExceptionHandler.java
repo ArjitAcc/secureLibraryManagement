@@ -1,4 +1,4 @@
-package com.assignment6.secureLibraryManagement.exceptionHandler;
+package com.assignment6.secureLibraryManagement.exception.exceptionHandler;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

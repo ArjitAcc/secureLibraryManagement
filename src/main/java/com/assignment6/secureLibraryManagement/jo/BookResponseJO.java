@@ -1,4 +1,4 @@
-package com.assignment6.secureLibraryManagement.JO;
+package com.assignment6.secureLibraryManagement.jo;
 
 public record BookResponseJO(
         Long id,
