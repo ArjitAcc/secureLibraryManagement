@@ -12,53 +12,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
-
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder; // store encrypted password
-    private final UserJOMapper userJOMapper;
-
-    private void authorize(String emailAddress, Authentication authentication){
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
-        assert role != null;
-        if(role.equals("ADMIN")) return;
-        if(!authentication.getName().equals(emailAddress)) {
-            throw new UnauthorizedRequestException("user does not have access to others data");
-        }
-    }
-
-    public Long addUser(UserRequestJO userRequestJO){
-        User user = new User();
-        userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
-        User savedUser = userRepository.save(user);
-        return savedUser.getId();
-    }
-    public void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
-        userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
-        userRepository.save(user);
-    }
-    public UserResponseJO getUser(Long userId, Authentication authentication){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
-        return userJOMapper.mapToPOJO(user);
-    }
-    public void softDelete(Long userId, Authentication authentication){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
-        user.setActive(false);
-        userRepository.save(user);
-//        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
-//        if(!isAuthorised) return;
-//        userRepository.deleteById(userId);
-    }
-    public void setActive(Long userId, Authentication authentication){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
-        user.setActive(true);
-        userRepository.save(user);
-    }
+public interface UserService {
+    Long addUser(User user);
+    void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication);
+    UserResponseJO getUser(Long userId, Authentication authentication);
+    void deleteUser(Long userId, Authentication authentication);
+    void setActive(Long userId, Authentication authentication);
 }

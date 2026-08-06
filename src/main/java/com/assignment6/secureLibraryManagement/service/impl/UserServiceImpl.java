@@ -7,6 +7,8 @@ import com.assignment6.secureLibraryManagement.exception.UnauthorizedRequestExce
 import com.assignment6.secureLibraryManagement.exception.UserNotFoundException;
 import com.assignment6.secureLibraryManagement.mapper.UserJOMapper;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
+import com.assignment6.secureLibraryManagement.service.AuthorizeService;
+import com.assignment6.secureLibraryManagement.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,41 +16,31 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // store encrypted password
     private final UserJOMapper userJOMapper;
+    private final AuthorizeService authorizeService;
 
-    private void authorize(String emailAddress, Authentication authentication){
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
-        assert role != null;
-        if(role.equals("ADMIN")) return;
-        if(!authentication.getName().equals(emailAddress)) {
-            throw new UnauthorizedRequestException("user does not have access to others data");
-        }
-    }
-
-    public Long addUser(UserRequestJO userRequestJO){
-        User user = new User();
-        userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
+    public Long addUser(User user){
         User savedUser = userRepository.save(user);
         return savedUser.getId();
     }
     public void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
+        authorizeService.authorize(user.getEmailAddress(), authentication);
         userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
         userRepository.save(user);
     }
     public UserResponseJO getUser(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
+        authorizeService.authorize(user.getEmailAddress(), authentication);
         return userJOMapper.mapToPOJO(user);
     }
-    public void softDelete(Long userId, Authentication authentication){
+    public void deleteUser(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
+        authorizeService.authorize(user.getEmailAddress(), authentication);
         user.setActive(false);
         userRepository.save(user);
 //        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
@@ -57,7 +49,7 @@ public class UserServiceImpl {
     }
     public void setActive(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorize(user.getEmailAddress(), authentication);
+        authorizeService.authorize(user.getEmailAddress(), authentication);
         user.setActive(true);
         userRepository.save(user);
     }

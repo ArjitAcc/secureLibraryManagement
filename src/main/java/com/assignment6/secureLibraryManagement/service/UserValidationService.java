@@ -6,12 +6,6 @@ import com.assignment6.secureLibraryManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class UserValidationService {
-    private final UserRepository userRepository;
-
-    public void validateUser(Long userId){
-        userRepository.findById(userId).filter(User::isActive).orElseThrow(()-> new UserNotActiveException("User not active"));
-    }
+public interface UserValidationService {
+    void validateUser(Long userId);
 }
