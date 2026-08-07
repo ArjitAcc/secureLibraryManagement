@@ -30,14 +30,15 @@ public class UserManagementController {
 
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponseJO> getUser(@PathVariable("user-id") Long userId, Authentication authentication){
-        UserResponseJO userReturned = userService.getUser(userId, authentication);
-        if(userReturned == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(userReturned);
+        User userReturned = userService.getUser(userId, authentication);
+        return ResponseEntity.ok(userJOMapper.mapToPOJO(userReturned));
     }
 
     @PutMapping("/{user-id}")
     public void updateUser(@Valid @RequestBody UserRequestJO userRequestJO, @PathVariable("user-id") Long userId, Authentication authentication){
-        userService.updateUser(userRequestJO, userId, authentication);
+        User UpdatedUser = new User();
+        userJOMapper.mapFromJO(userRequestJO, UpdatedUser, passwordEncoder);
+        userService.updateUser(UpdatedUser, userId, authentication);
     }
 
     @DeleteMapping("/{user-id}")
@@ -47,6 +48,6 @@ public class UserManagementController {
 
     @PatchMapping("/{user-id}")
     public void activateUser(@PathVariable("user-id") Long userId, Authentication authentication){
-        userService.setActive(userId, authentication);
+        userService.activateUser(userId, authentication);
     }
 }

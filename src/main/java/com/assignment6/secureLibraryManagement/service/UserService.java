@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 
 public interface UserService {
     Long addUser(User user);
-    void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication);
-    UserResponseJO getUser(Long userId, Authentication authentication);
+    void updateUser(User updatedUser, Long userId, Authentication authentication);
+    User getUser(Long userId, Authentication authentication);
     void deleteUser(Long userId, Authentication authentication);
-    void setActive(Long userId, Authentication authentication);
+    void activateUser(Long userId, Authentication authentication);
 }
