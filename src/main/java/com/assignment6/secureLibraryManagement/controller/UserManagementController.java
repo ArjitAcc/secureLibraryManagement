@@ -30,8 +30,7 @@ public class UserManagementController {
 
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponseJO> getUser(@PathVariable("user-id") Long userId, Authentication authentication){
-        User userReturned = userService.getUser(userId, authentication);
-        return ResponseEntity.ok(userJOMapper.mapToPOJO(userReturned));
+        return ResponseEntity.ok(userJOMapper.mapToPOJO(userService.getUser(userId, authentication)));
     }
 
     @PutMapping("/{user-id}")
