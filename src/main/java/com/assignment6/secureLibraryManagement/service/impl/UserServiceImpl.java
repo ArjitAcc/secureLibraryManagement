@@ -27,16 +27,15 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
         return savedUser.getId();
     }
-    public void updateUser(UserRequestJO userRequestJO, Long userId, Authentication authentication){
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
-        authorizeService.authorize(user.getEmailAddress(), authentication);
-        userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
-        userRepository.save(user);
+    public void updateUser(User updateUser, Long userId, Authentication authentication){
+        getUser(userId, authentication);
+        updateUser.setId(userId);
+        userRepository.save(updateUser);
     }
-    public UserResponseJO getUser(Long userId, Authentication authentication){
+    public User getUser(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
         authorizeService.authorize(user.getEmailAddress(), authentication);
-        return userJOMapper.mapToPOJO(user);
+        return user;
     }
     public void deleteUser(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
@@ -47,7 +46,7 @@ public class UserServiceImpl implements UserService {
 //        if(!isAuthorised) return;
 //        userRepository.deleteById(userId);
     }
-    public void setActive(Long userId, Authentication authentication){
+    public void activateUser(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
         authorizeService.authorize(user.getEmailAddress(), authentication);
         user.setActive(true);
