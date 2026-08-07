@@ -10,6 +10,7 @@ import com.assignment6.secureLibraryManagement.mapper.BorrowRecordJOMapper;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import com.assignment6.secureLibraryManagement.repository.BorrowRecordRepository;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
+import com.assignment6.secureLibraryManagement.service.BorrowRecordService;
 import com.assignment6.secureLibraryManagement.service.UserValidationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class BorrowRecordServiceImpl {
+public class BorrowRecordServiceImpl implements BorrowRecordService {
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final BorrowRecordRepository borrowRecordRepository;

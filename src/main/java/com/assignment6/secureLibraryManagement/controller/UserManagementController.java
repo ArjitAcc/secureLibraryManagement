@@ -20,18 +20,21 @@ public class UserManagementController {
     private final UserJOMapper userJOMapper;
     private final PasswordEncoder passwordEncoder;
 
-    @PostMapping("/")
-    public ResponseEntity<Long> addUser(@Valid  @RequestBody UserRequestJO userRequestJO){
+    private User buildUser(UserRequestJO userRequestJO){
         User user = new User();
         userJOMapper.mapFromJO(userRequestJO, user, passwordEncoder);
-        Long userSavedId = userService.addUser(user);
+        return user;
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<Long> addUser(@Valid  @RequestBody UserRequestJO userRequestJO){
+        Long userSavedId = userService.addUser(buildUser(userRequestJO));
         return ResponseEntity.ok(userSavedId);
     }
 
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponseJO> getUser(@PathVariable("user-id") Long userId, Authentication authentication){
         UserResponseJO userReturned = userService.getUser(userId, authentication);
-        if(userReturned == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(userReturned);
     }
 
