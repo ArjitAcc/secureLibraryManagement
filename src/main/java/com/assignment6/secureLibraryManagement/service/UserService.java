@@ -13,9 +13,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 public interface UserService {
+
     Long addUser(User user);
+
     void updateUser(User updatedUser, Long userId, Authentication authentication);
+
     User getUser(Long userId, Authentication authentication);
+
     void deleteUser(Long userId, Authentication authentication);
+
     void activateUser(Long userId, Authentication authentication);
+
 }

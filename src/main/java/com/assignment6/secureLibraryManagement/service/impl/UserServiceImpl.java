@@ -42,9 +42,6 @@ public class UserServiceImpl implements UserService {
         authorizeService.authorize(user.getEmailAddress(), authentication);
         user.setActive(false);
         userRepository.save(user);
-//        boolean isAuthorised = isAuthorised(user.getEmailAddress(), authentication);
-//        if(!isAuthorised) return;
-//        userRepository.deleteById(userId);
     }
     public void activateUser(Long userId, Authentication authentication){
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user not found!"));
