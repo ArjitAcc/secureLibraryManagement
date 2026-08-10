@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder; // store encrypted password
-    private final UserJOMapper userJOMapper;
     private final AuthorizeService authorizeService;
 
     public Long addUser(User user){

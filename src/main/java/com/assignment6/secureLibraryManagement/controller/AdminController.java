@@ -20,17 +20,18 @@ public class AdminController {
     public final BookJOMapper bookJOMapper;
 
     @PostMapping("/books")
-    public ResponseEntity<BookResponseJO> createBook(@Valid  @RequestBody BookRequestJO bookRequestJO){
+    public ResponseEntity<Long> createBook(@Valid  @RequestBody BookRequestJO bookRequestJO){
         Book book = new Book();
         bookJOMapper.mapFromJO(bookRequestJO, book);
-        BookResponseJO bookReturned = bookService.addBook(book);
-        return ResponseEntity.ok(bookReturned);
+        return ResponseEntity.ok(bookService.addBook(book));
     }
 
     @PutMapping("/books/{book-id}")
-    public ResponseEntity<BookResponseJO> updateBook(@Valid @PathVariable("book-id") Long bookId, @RequestBody BookRequestJO bookRequestJO){
-        BookResponseJO book = bookService.updateBook(bookRequestJO, bookId);
-        return ResponseEntity.ok(book);
+    public ResponseEntity<Void> updateBook(@Valid @PathVariable("book-id") Long bookId, @RequestBody BookRequestJO bookRequestJO){
+        Book book = new Book();
+        bookJOMapper.mapFromJO(bookRequestJO, book);
+        bookService.updateBook(book, bookId);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/books/{id}")
@@ -41,13 +42,11 @@ public class AdminController {
 
     @GetMapping("/books")
     public ResponseEntity<List<BookResponseJO>> getAllBooks(){
-        List<BookResponseJO> books = bookService.getALlBooks();
-        return ResponseEntity.ok(books);
+        return ResponseEntity.ok(bookService.getAllBooks().stream().map(bookJOMapper::mapToPOJO).toList());
     }
 
     @GetMapping("/books/{book-id}")
     public ResponseEntity<BookResponseJO> getBook(@PathVariable("book-id") Long bookId){
-        BookResponseJO book = bookService.getBook(bookId);
-        return ResponseEntity.ok(book);
+        return ResponseEntity.ok(bookJOMapper.mapToPOJO(bookService.getBook(bookId)));
     }
 }
