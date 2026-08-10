@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Setter
 @Getter
+@NoArgsConstructor
 public class Book {
 
     @Id
