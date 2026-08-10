@@ -21,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BorrowRecordServiceImpl implements BorrowRecordService {
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
@@ -28,7 +29,6 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
     private final UserValidationService userValidationService;
     private final BorrowRecordJOMapper borrowRecordJOMapper;
 
-    @Transactional
     public BorrowRecordResponseJO borrowBook(String emailAddress, Long bookId) {
 
         User user = userRepository.findByEmailAddress(emailAddress)

@@ -38,19 +38,22 @@ public class UserManagementController {
     }
 
     @PutMapping("/{user-id}")
-    public void updateUser(@Valid @RequestBody UserRequestJO userRequestJO, @PathVariable("user-id") Long userId, Authentication authentication){
+    public ResponseEntity<Void> updateUser(@Valid @RequestBody UserRequestJO userRequestJO, @PathVariable("user-id") Long userId, Authentication authentication){
         User UpdatedUser = new User();
         userJOMapper.mapFromJO(userRequestJO, UpdatedUser, passwordEncoder);
         userService.updateUser(UpdatedUser, userId, authentication);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{user-id}")
-    public void removeUser(@PathVariable("user-id") Long userId, Authentication authentication){
+    public ResponseEntity<Void> removeUser(@PathVariable("user-id") Long userId, Authentication authentication){
         userService.deleteUser(userId, authentication);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{user-id}")
-    public void activateUser(@PathVariable("user-id") Long userId, Authentication authentication){
+    public ResponseEntity<Void> activateUser(@PathVariable("user-id") Long userId, Authentication authentication){
         userService.activateUser(userId, authentication);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -7,6 +7,7 @@ import com.assignment6.secureLibraryManagement.exception.BookNotFoundException;
 import com.assignment6.secureLibraryManagement.mapper.BookJOMapper;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import com.assignment6.secureLibraryManagement.service.BookService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
