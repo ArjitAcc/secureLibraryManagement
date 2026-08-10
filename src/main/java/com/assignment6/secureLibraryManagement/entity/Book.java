@@ -31,4 +31,13 @@ public class Book {
 
     @PositiveOrZero
     private int availableCopies;
+
+    public Book(String title, String author, String isbn, int price, int availableCopies) {
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.price = price;
+        this.availableCopies= availableCopies;
+
+    }
 }

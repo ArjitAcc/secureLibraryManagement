@@ -25,4 +25,12 @@ public class BorrowRecord {
 
     @Enumerated(EnumType.STRING)
     private BorrowStatus status;
+
+    public BorrowRecord(User user, Book book, LocalDateTime borrowDate, LocalDateTime returnDate, BorrowStatus status) {
+        this.user = user;
+        this.book = book;
+        this.borrowDate = borrowDate;
+        this.returnDate = returnDate;
+        this.status = status;
+    }
 }
