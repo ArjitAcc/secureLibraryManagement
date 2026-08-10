@@ -23,31 +23,30 @@ public class AdminController {
     public ResponseEntity<Long> createBook(@Valid  @RequestBody BookRequestJO bookRequestJO){
         Book book = new Book();
         bookJOMapper.mapFromJO(bookRequestJO, book);
-        Long bookId = bookService.addBook(book);
-        return ResponseEntity.ok(bookId);
+        return ResponseEntity.ok(bookService.addBook(book));
     }
 
     @PutMapping("/books/{book-id}")
-    public void updateBook(@Valid @PathVariable("book-id") Long bookId, @RequestBody BookRequestJO bookRequestJO){
+    public ResponseEntity<Void> updateBook(@Valid @PathVariable("book-id") Long bookId, @RequestBody BookRequestJO bookRequestJO){
         Book book = new Book();
         bookJOMapper.mapFromJO(bookRequestJO, book);
         bookService.updateBook(book, bookId);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/books/{id}")
-    public void deleteBook(@PathVariable("book-id") Long bookId){
+    public ResponseEntity<Void> deleteBook(@PathVariable("book-id") Long bookId){
         bookService.deleteBook(bookId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/books")
     public ResponseEntity<List<BookResponseJO>> getAllBooks(){
-        List<Book> books = bookService.getAllBooks();
-        return ResponseEntity.ok(books.stream().map(bookJOMapper::mapToPOJO).toList());
+        return ResponseEntity.ok(bookService.getAllBooks().stream().map(bookJOMapper::mapToPOJO).toList());
     }
 
     @GetMapping("/books/{book-id}")
     public ResponseEntity<BookResponseJO> getBook(@PathVariable("book-id") Long bookId){
-        Book book = bookService.getBook(bookId);
-        return ResponseEntity.ok(bookJOMapper.mapToPOJO(book));
+        return ResponseEntity.ok(bookJOMapper.mapToPOJO(bookService.getBook(bookId)));
     }
 }

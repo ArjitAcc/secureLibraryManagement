@@ -15,8 +15,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
+
     private final BookRepository bookRepository;
-    private final BookJOMapper bookJOMapper;
+
     public Long addBook(Book book){
         Book bookSaved = bookRepository.save(book);
         return bookSaved.getId();
@@ -29,8 +30,7 @@ public class BookServiceImpl implements BookService {
     }
 
     public void deleteBook(Long id){
-        boolean isExist = bookRepository.existsById(id);
-        if(isExist) bookRepository.deleteById(id);
+        if(bookRepository.existsById(id)) bookRepository.deleteById(id);
     }
 
     public List<Book> getAllBooks(){
