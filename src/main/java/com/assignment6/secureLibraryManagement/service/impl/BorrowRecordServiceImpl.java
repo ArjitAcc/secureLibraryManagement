@@ -30,6 +30,11 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
     private final UserValidationService userValidationService;
     private final BorrowRecordJOMapper borrowRecordJOMapper;
 
+    private void updateBookCopy(Book book, int copy){
+        book.setAvailableCopies(copy);
+        bookRepository.save(book);
+    }
+
     public Long borrowBook(String emailAddress, Long bookId) {
 
         User user = userRepository.findByEmailAddress(emailAddress)
@@ -54,8 +59,7 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         record.setStatus(BorrowStatus.BORROWED);
         BorrowRecord recordSaved = borrowRecordRepository.save(record);
 
-        book.setAvailableCopies(book.getAvailableCopies() - 1);
-        bookRepository.save(book);
+        updateBookCopy(book, book.getAvailableCopies() - 1);
 
         return recordSaved.getId();
     }
@@ -67,8 +71,7 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         borrowRecord.setStatus(BorrowStatus.RETURNED);
 
         Book book = borrowRecord.getBook();
-        book.setAvailableCopies(book.getAvailableCopies() + 1);
-        bookRepository.save(book);
+        updateBookCopy(book, book.getAvailableCopies() - 1);
 
         return borrowRecordRepository.save(borrowRecord);
     }
