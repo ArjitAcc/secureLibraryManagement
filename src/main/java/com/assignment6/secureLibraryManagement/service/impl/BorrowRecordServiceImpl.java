@@ -23,13 +23,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class BorrowRecordServiceImpl implements BorrowRecordService {
+
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
     private final BorrowRecordRepository borrowRecordRepository;
     private final UserValidationService userValidationService;
     private final BorrowRecordJOMapper borrowRecordJOMapper;
 
-    public BorrowRecordResponseJO borrowBook(String emailAddress, Long bookId) {
+    public Long borrowBook(String emailAddress, Long bookId) {
 
         User user = userRepository.findByEmailAddress(emailAddress)
                 .orElseThrow(() ->  new UserNotFoundException("User not found!"));
@@ -42,38 +43,39 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         if (book.getAvailableCopies() <= 0) {
             throw new BookNotAvailableException("Book not available");
         }
-
         if (borrowRecordRepository.existsByUserAndBookAndStatus(user, book, BorrowStatus.BORROWED)) {
             throw new AlreadyBorrowedException("Already borrowed this book");
         }
-
-        book.setAvailableCopies(book.getAvailableCopies() - 1);
 
         BorrowRecord record = new BorrowRecord();
         record.setUser(user);
         record.setBook(book);
         record.setBorrowDate(LocalDateTime.now());
         record.setStatus(BorrowStatus.BORROWED);
-
         BorrowRecord recordSaved = borrowRecordRepository.save(record);
+
+        book.setAvailableCopies(book.getAvailableCopies() - 1);
         bookRepository.save(book);
-        return borrowRecordJOMapper.mapToPOJO(recordSaved);
+
+        return recordSaved.getId();
     }
 
-    public BorrowRecordResponseJO returnBook(Long borrowRecordId){
+    public BorrowRecord returnBook(Long borrowRecordId){
         BorrowRecord borrowRecord = borrowRecordRepository.findById(borrowRecordId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+        borrowRecord.setReturnDate(LocalDateTime.now());
+        borrowRecord.setStatus(BorrowStatus.RETURNED);
+
         Book book = borrowRecord.getBook();
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         bookRepository.save(book);
-        borrowRecord.setReturnDate(LocalDateTime.now());
-        borrowRecord.setStatus(BorrowStatus.RETURNED);
-        borrowRecordRepository.save(borrowRecord);
-        return borrowRecordJOMapper.mapToPOJO(borrowRecord);
+
+        return borrowRecordRepository.save(borrowRecord);
     }
 
-    public List<BorrowRecordResponseJO> getBookRecords(String emailAddress){
-        return borrowRecordRepository.findByUserEmailAddress(emailAddress).stream().map(borrowRecordJOMapper::mapToPOJO).toList();
+    public List<BorrowRecord> getBookRecords(String emailAddress){
+        return borrowRecordRepository.findByUserEmailAddress(emailAddress);
     }
+
 }
 

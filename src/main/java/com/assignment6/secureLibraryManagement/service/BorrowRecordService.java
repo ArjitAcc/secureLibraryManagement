@@ -20,10 +20,10 @@ import java.util.List;
 public interface BorrowRecordService {
 
     @Transactional
-    BorrowRecordResponseJO borrowBook(String emailAddress, Long bookId);
+    Long borrowBook(String emailAddress, Long bookId);
 
-    BorrowRecordResponseJO returnBook(Long borrowRecordId);
+    BorrowRecord returnBook(Long borrowRecordId);
 
-    List<BorrowRecordResponseJO> getBookRecords(String emailAddress);
+    List<BorrowRecord> getBookRecords(String emailAddress);
 }
 
