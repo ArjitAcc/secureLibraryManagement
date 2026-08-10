@@ -1,6 +1,7 @@
 package com.assignment6.secureLibraryManagement.controller;
 
 import com.assignment6.secureLibraryManagement.jo.BorrowRecordResponseJO;
+import com.assignment6.secureLibraryManagement.mapper.BorrowRecordJOMapper;
 import com.assignment6.secureLibraryManagement.service.BorrowRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,22 +16,20 @@ import java.util.List;
 public class UserController {
 
     private final BorrowRecordService borrowRecordService;
+    private final BorrowRecordJOMapper borrowRecordJOMapper;
 
     @PostMapping("/borrow/{book-id}")
-    public ResponseEntity<BorrowRecordResponseJO> createBorrowRecord(@PathVariable("book-id") Long bookId, Principal principal){
-        BorrowRecordResponseJO borrowRecordResponse = borrowRecordService.borrowBook(principal.getName(), bookId);
-        return ResponseEntity.ok(borrowRecordResponse);
+    public ResponseEntity<Long> createBorrowRecord(@PathVariable("book-id") Long bookId, Principal principal){
+        return ResponseEntity.ok(borrowRecordService.borrowBook(principal.getName(), bookId));
     }
 
     @PutMapping("/return/{borrow-id}")
     public ResponseEntity<BorrowRecordResponseJO> updateBorrowRecordToReturn(@PathVariable("borrow-id") Long borrowId){
-        BorrowRecordResponseJO borrowRecordResponse = borrowRecordService.returnBook(borrowId);
-        return ResponseEntity.ok(borrowRecordResponse);
+        return ResponseEntity.ok(borrowRecordJOMapper.mapToPOJO(borrowRecordService.returnBook(borrowId)));
     }
 
     @GetMapping("/my-books")
     public ResponseEntity<List<BorrowRecordResponseJO>> getBorrowBooks(Principal principal){
-        List<BorrowRecordResponseJO> borrowBooks = borrowRecordService.getBookRecords(principal.getName());
-        return ResponseEntity.ok(borrowBooks);
+        return ResponseEntity.ok(borrowRecordService.getBookRecords(principal.getName()).stream().map(borrowRecordJOMapper::mapToPOJO).toList());
     }
 }
