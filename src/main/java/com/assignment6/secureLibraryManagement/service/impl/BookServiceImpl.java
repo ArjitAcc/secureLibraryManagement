@@ -17,31 +17,27 @@ import java.util.List;
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookJOMapper bookJOMapper;
-    public BookResponseJO addBook(Book book){
+    public Long addBook(Book book){
         Book bookSaved = bookRepository.save(book);
-        return bookJOMapper.mapToPOJO(bookSaved);
+        return bookSaved.getId();
     }
 
-    public BookResponseJO updateBook(BookRequestJO bookRequestJO, Long id){
-        Book book = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException("book not found!"));
-        bookJOMapper.mapFromJO(bookRequestJO, book);
-        Book savedBook = bookRepository.save(book);
-        return bookJOMapper.mapToPOJO(savedBook);
+    public void updateBook(Book book, Long id){
+        getBook(id);
+        book.setId(id);
+        bookRepository.save(book);
     }
 
     public void deleteBook(Long id){
         boolean isExist = bookRepository.existsById(id);
-        if(!isExist) return;
-        bookRepository.deleteById(id);
+        if(isExist) bookRepository.deleteById(id);
     }
 
-    public List<BookResponseJO> getALlBooks(){
-        List<Book> books = bookRepository.findAll();
-        return books.stream().map((b) -> bookJOMapper.mapToPOJO(b)).toList();
+    public List<Book> getAllBooks(){
+        return bookRepository.findAll();
     }
 
-    public BookResponseJO getBook(Long bookId){
-        Book book = bookRepository.findById(bookId).orElseThrow(() -> new BookNotFoundException("book not found!"));
-        return bookJOMapper.mapToPOJO(book);
+    public Book getBook(Long bookId){
+        return bookRepository.findById(bookId).orElseThrow(() -> new BookNotFoundException("book not found!"));
     }
 }

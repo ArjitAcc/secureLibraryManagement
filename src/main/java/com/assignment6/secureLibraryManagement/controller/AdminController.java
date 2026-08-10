@@ -20,34 +20,34 @@ public class AdminController {
     public final BookJOMapper bookJOMapper;
 
     @PostMapping("/books")
-    public ResponseEntity<BookResponseJO> createBook(@Valid  @RequestBody BookRequestJO bookRequestJO){
+    public ResponseEntity<Long> createBook(@Valid  @RequestBody BookRequestJO bookRequestJO){
         Book book = new Book();
         bookJOMapper.mapFromJO(bookRequestJO, book);
-        BookResponseJO bookReturned = bookService.addBook(book);
-        return ResponseEntity.ok(bookReturned);
+        Long bookId = bookService.addBook(book);
+        return ResponseEntity.ok(bookId);
     }
 
     @PutMapping("/books/{book-id}")
-    public ResponseEntity<BookResponseJO> updateBook(@Valid @PathVariable("book-id") Long bookId, @RequestBody BookRequestJO bookRequestJO){
-        BookResponseJO book = bookService.updateBook(bookRequestJO, bookId);
-        return ResponseEntity.ok(book);
+    public void updateBook(@Valid @PathVariable("book-id") Long bookId, @RequestBody BookRequestJO bookRequestJO){
+        Book book = new Book();
+        bookJOMapper.mapFromJO(bookRequestJO, book);
+        bookService.updateBook(book, bookId);
     }
 
     @DeleteMapping("/books/{id}")
-    public ResponseEntity<Void> deleteBook(@PathVariable("book-id") Long bookId){
+    public void deleteBook(@PathVariable("book-id") Long bookId){
         bookService.deleteBook(bookId);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/books")
     public ResponseEntity<List<BookResponseJO>> getAllBooks(){
-        List<BookResponseJO> books = bookService.getALlBooks();
-        return ResponseEntity.ok(books);
+        List<Book> books = bookService.getAllBooks();
+        return ResponseEntity.ok(books.stream().map(bookJOMapper::mapToPOJO).toList());
     }
 
     @GetMapping("/books/{book-id}")
     public ResponseEntity<BookResponseJO> getBook(@PathVariable("book-id") Long bookId){
-        BookResponseJO book = bookService.getBook(bookId);
-        return ResponseEntity.ok(book);
+        Book book = bookService.getBook(bookId);
+        return ResponseEntity.ok(bookJOMapper.mapToPOJO(book));
     }
 }
