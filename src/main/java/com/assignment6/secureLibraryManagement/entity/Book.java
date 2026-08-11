@@ -17,21 +17,16 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
     private String title;
 
-    @NotBlank
-    @Pattern(regexp = "^[A-Za-z]+$")
     private String author;
 
     @Column(unique = true)
     private String isbn;
 
-    @Max(value=1000)
     @Positive
     private Integer price;
 
-    @PositiveOrZero
     private int availableCopies;
 
     public Book(String title, String author, String isbn, int price, int availableCopies) {

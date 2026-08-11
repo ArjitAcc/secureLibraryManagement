@@ -1,5 +1,6 @@
 package com.assignment6.secureLibraryManagement.service;
 
+import com.assignment6.secureLibraryManagement.exception.BookNotFoundException;
 import com.assignment6.secureLibraryManagement.jo.BookRequestJO;
 import com.assignment6.secureLibraryManagement.jo.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
@@ -29,85 +30,128 @@ class BookServiceTest {
     @InjectMocks
     BookServiceImpl bookService;
 
+    private static Book buildBook1(Long id){
+        Book book1 = new Book("Book1 Title", "Book1 Author", "Book1 ISBN", 340, 2);
+        book1.setId(id);
+        return book1;
+    }
+
+    private Book buildBook2(Long id){
+        Book book2 = new Book("Book2 Title", "Book2 Author", "Book2 ISBN", 430, 1);
+        book2.setId(id);
+        return book2;
+    }
+
     @Test
     void addBookShouldAddBookSuccessfully(){
-        Book savedBook = new Book("Book Title", "Book Author", "Book ISBN", 450, 2);
-        savedBook.setId(1001L);
-        when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
+        long MOCK_BOOK_ID = 1001L;
+        Book savedBook = buildBook1(MOCK_BOOK_ID);
+        when(bookRepository.save(isA(Book.class))).thenReturn(savedBook);
 
         Long bookId = bookService.addBook(savedBook);
 
-        assertEquals(savedBook.getId(), bookId);
+        assertEquals(bookId, savedBook.getId());
+        verify(bookRepository).save(isA(Book.class));
     }
 
     @Test
     void deleteBookShouldDeleteBookSuccessfully(){
-        Long id = 1L;
-        when(bookRepository.existsById(id)).thenReturn(true);
+        Long MOCK_BOOK_ID = 1001L;
+        when(bookRepository.existsById(anyLong())).thenReturn(true);
         doNothing().when(bookRepository).deleteById(anyLong());
 
-        bookService.deleteBook(id);
+        bookService.deleteBook(MOCK_BOOK_ID);
 
-        verify(bookRepository, times(1)).deleteById(id);
+        verify(bookRepository).existsById(anyLong());
+        verify(bookRepository, times(1)).deleteById(anyLong());
     }
 
     @Test
     void deleteBookShouldDoNothingWhenBookDoesNotExist(){
-        Long id = 10L;
-        when(bookRepository.existsById(id)).thenReturn(false);
+        Long MOCK_BOOK_ID = 1001L;
+        when(bookRepository.existsById(anyLong())).thenReturn(false);
 
-        bookService.deleteBook(id);
+        bookService.deleteBook(MOCK_BOOK_ID);
 
-        verify(bookRepository, never()).deleteById(id);
+        verify(bookRepository).existsById(anyLong());
+        verify(bookRepository, never()).deleteById(anyLong());
     }
 
     @Test
     void getAllBooksShouldGetAllBooksSuccessfully(){
+        long MOCK_BOOK_ID = 1001L;
+        long MOCK_OTHER_BOOK_ID = 1002L;
         List<Book> books = new ArrayList<>();
-        Book book1 = new Book("Book1 Title", "Book1 Author", "Book1 ISBN", 340, 2);
-        book1.setId(1001L);
-        Book book2 = new Book("Book2 Title", "Book2 Author", "Book2 ISBN", 430, 1);
-        book2.setId(1001L);
+        Book book1 = buildBook1(MOCK_BOOK_ID);
+        Book book2 = buildBook2(MOCK_OTHER_BOOK_ID);
         books.add(book1);
         books.add(book2);
         when(bookRepository.findAll()).thenReturn(books);
 
         List<Book> booksReturned = bookService.getAllBooks();
 
-        verify(bookRepository).findAll();
         assertEquals(books.size(), booksReturned.size());
         for(int i = 0; i < books.size(); i++){
             assertEquals(books.get(i).getId(), booksReturned.get(i).getId());
+            assertEquals(books.get(i).getAvailableCopies(), booksReturned.get(i).getAvailableCopies());
+            assertEquals(books.get(i).getTitle(), booksReturned.get(i).getTitle());
+            assertEquals(books.get(i).getAuthor(), booksReturned.get(i).getAuthor());
+            assertEquals(books.get(i).getPrice(), booksReturned.get(i).getPrice());
         }
+        verify(bookRepository).findAll();
     }
 
     @Test
     void updateBookShouldUpdateBookSuccessfully(){
-        Long id = 1001L;
-        Book book = new Book("Book Title", "Book Author", "Book ISBN", 450, 2);
-        book.setId(id);
-        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
-        Book updatedBook = new Book("Book Updated Title", "Book Author", "Book ISBN", 800, 1);
-        when(bookRepository.save(any(Book.class))).thenReturn(updatedBook);
+        Long MOCK_BOOK_ID = 1001L;
+        Book book = buildBook1(MOCK_BOOK_ID);
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
+        Book updatedBook = buildBook2(MOCK_BOOK_ID);
+        when(bookRepository.save(isA(Book.class))).thenReturn(updatedBook);
 
-        bookService.updateBook(updatedBook, id);
+        bookService.updateBook(updatedBook, MOCK_BOOK_ID);
 
-        assertNotNull(updatedBook);
-        assertEquals(id, updatedBook.getId());
-        verify(bookRepository).save(any(Book.class));
-        verify(bookRepository).findById(id);
+        assertEquals(MOCK_BOOK_ID, updatedBook.getId());
+        verify(bookRepository).save(isA(Book.class));
+        verify(bookRepository).findById(anyLong());
+    }
+
+    @Test
+    void updateBookShouldThrowErrorWhenBookDoesNotExist(){
+        Long MOCK_BOOK_ID = 1001L;
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+        Book updatedBook = buildBook2(MOCK_BOOK_ID);
+
+        assertThrows(BookNotFoundException.class, () -> bookService.updateBook(updatedBook, MOCK_BOOK_ID));
+
+        verify(bookRepository, never()).save(isA(Book.class));
+        verify(bookRepository).findById(anyLong());
     }
 
     @Test
     void getBookShouldGetBookSuccessfully(){
-        Long id = 1L;
-        Book book = new Book("Book Title", "Book Author", "Book ISBN", 450, 2);
-        book.setId(id);
-        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+        Long MOCK_BOOK_ID = 1001L;
+        Book book = buildBook1(MOCK_BOOK_ID);
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
 
-        Book bookReturned = bookService.getBook(id);
+        Book bookReturned = bookService.getBook(MOCK_BOOK_ID);
 
-        assertEquals(bookReturned.getId(), book.getId());
+        assertEquals(book.getId(), bookReturned.getId());
+        assertEquals(book.getAvailableCopies(), bookReturned.getAvailableCopies());
+        assertEquals(book.getTitle(), bookReturned.getTitle());
+        assertEquals(book.getAuthor(), bookReturned.getAuthor());
+        assertEquals(book.getPrice(), bookReturned.getPrice());
+        verify(bookRepository).findById(anyLong());
+    }
+
+    @Test
+    void getBookShouldThrowErrorWhenBookDoesNotExist(){
+        Long MOCK_BOOK_ID = 1001L;
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(BookNotFoundException.class, () -> bookService.getBook(MOCK_BOOK_ID));
+
+        verify(bookRepository).findById(anyLong());
     }
 
 }
