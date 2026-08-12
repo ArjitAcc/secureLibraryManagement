@@ -21,8 +21,8 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
 
     public Long addBook(Book book){
-        Book bookSaved = bookRepository.save(book);
-        return bookSaved.getId();
+        bookRepository.save(book);
+        return book.getId();
     }
 
     public void updateBook(Book book, Long id){

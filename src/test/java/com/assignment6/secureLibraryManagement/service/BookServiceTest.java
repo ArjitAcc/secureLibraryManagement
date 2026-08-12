@@ -48,25 +48,26 @@ class BookServiceTest {
     @Test
     void addBookShouldAddBookSuccessfully(){
 
-        Book savedBook = buildBook1(MOCK_BOOK_ID);
-        when(bookRepository.save(isA(Book.class))).thenReturn(savedBook);
+        Book book = buildBook1(null);
+        when(bookRepository.save(book)).thenAnswer(invocation -> {
+            book.setId(MOCK_BOOK_ID);
+            return book;
+        });
 
-        Book book = buildBook2(null);
         Long bookId = bookService.addBook(book);
 
-        assertEquals(savedBook.getId(), bookId);
+        assertEquals(MOCK_BOOK_ID, bookId);
         verify(bookRepository).save(book);
     }
 
     @Test
     void deleteBookShouldDeleteBookSuccessfully(){
         when(bookRepository.existsById(anyLong())).thenReturn(true);
-        doNothing().when(bookRepository).deleteById(anyLong());
 
         bookService.deleteBook(MOCK_BOOK_ID);
 
         verify(bookRepository).existsById(MOCK_BOOK_ID);
-        verify(bookRepository, times(1)).deleteById(MOCK_BOOK_ID);
+        verify(bookRepository).deleteById(MOCK_BOOK_ID);
     }
 
     @Test
