@@ -30,6 +30,9 @@ class BookServiceTest {
     @InjectMocks
     BookServiceImpl bookService;
 
+    long MOCK_BOOK_ID = 1001L;
+    long MOCK_OTHER_BOOK_ID = 1002L;
+
     private static Book buildBook1(Long id){
         Book book1 = new Book("Book1 Title", "Book1 Author", "Book1 ISBN", 340, 2);
         book1.setId(id);
@@ -44,43 +47,40 @@ class BookServiceTest {
 
     @Test
     void addBookShouldAddBookSuccessfully(){
-        long MOCK_BOOK_ID = 1001L;
+
         Book savedBook = buildBook1(MOCK_BOOK_ID);
         when(bookRepository.save(isA(Book.class))).thenReturn(savedBook);
 
-        Long bookId = bookService.addBook(savedBook);
+        Book book = buildBook2(null);
+        Long bookId = bookService.addBook(book);
 
-        assertEquals(bookId, savedBook.getId());
-        verify(bookRepository).save(isA(Book.class));
+        assertEquals(savedBook.getId(), bookId);
+        verify(bookRepository).save(book);
     }
 
     @Test
     void deleteBookShouldDeleteBookSuccessfully(){
-        Long MOCK_BOOK_ID = 1001L;
         when(bookRepository.existsById(anyLong())).thenReturn(true);
         doNothing().when(bookRepository).deleteById(anyLong());
 
         bookService.deleteBook(MOCK_BOOK_ID);
 
-        verify(bookRepository).existsById(anyLong());
-        verify(bookRepository, times(1)).deleteById(anyLong());
+        verify(bookRepository).existsById(MOCK_BOOK_ID);
+        verify(bookRepository, times(1)).deleteById(MOCK_BOOK_ID);
     }
 
     @Test
     void deleteBookShouldDoNothingWhenBookDoesNotExist(){
-        Long MOCK_BOOK_ID = 1001L;
         when(bookRepository.existsById(anyLong())).thenReturn(false);
 
         bookService.deleteBook(MOCK_BOOK_ID);
 
-        verify(bookRepository).existsById(anyLong());
-        verify(bookRepository, never()).deleteById(anyLong());
+        verify(bookRepository).existsById(MOCK_BOOK_ID);
+        verify(bookRepository, never()).deleteById(MOCK_BOOK_ID);
     }
 
     @Test
     void getAllBooksShouldGetAllBooksSuccessfully(){
-        long MOCK_BOOK_ID = 1001L;
-        long MOCK_OTHER_BOOK_ID = 1002L;
         List<Book> books = new ArrayList<>();
         Book book1 = buildBook1(MOCK_BOOK_ID);
         Book book2 = buildBook2(MOCK_OTHER_BOOK_ID);
@@ -103,7 +103,6 @@ class BookServiceTest {
 
     @Test
     void updateBookShouldUpdateBookSuccessfully(){
-        Long MOCK_BOOK_ID = 1001L;
         Book book = buildBook1(MOCK_BOOK_ID);
         when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
         Book updatedBook = buildBook2(MOCK_BOOK_ID);
@@ -112,25 +111,23 @@ class BookServiceTest {
         bookService.updateBook(updatedBook, MOCK_BOOK_ID);
 
         assertEquals(MOCK_BOOK_ID, updatedBook.getId());
-        verify(bookRepository).save(isA(Book.class));
-        verify(bookRepository).findById(anyLong());
+        verify(bookRepository).save(updatedBook);
+        verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
     @Test
     void updateBookShouldThrowErrorWhenBookDoesNotExist(){
-        Long MOCK_BOOK_ID = 1001L;
         when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
         Book updatedBook = buildBook2(MOCK_BOOK_ID);
 
         assertThrows(BookNotFoundException.class, () -> bookService.updateBook(updatedBook, MOCK_BOOK_ID));
 
-        verify(bookRepository, never()).save(isA(Book.class));
-        verify(bookRepository).findById(anyLong());
+        verify(bookRepository, never()).save(updatedBook);
+        verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
     @Test
     void getBookShouldGetBookSuccessfully(){
-        Long MOCK_BOOK_ID = 1001L;
         Book book = buildBook1(MOCK_BOOK_ID);
         when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
 
@@ -141,17 +138,16 @@ class BookServiceTest {
         assertEquals(book.getTitle(), bookReturned.getTitle());
         assertEquals(book.getAuthor(), bookReturned.getAuthor());
         assertEquals(book.getPrice(), bookReturned.getPrice());
-        verify(bookRepository).findById(anyLong());
+        verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
     @Test
     void getBookShouldThrowErrorWhenBookDoesNotExist(){
-        Long MOCK_BOOK_ID = 1001L;
         when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(BookNotFoundException.class, () -> bookService.getBook(MOCK_BOOK_ID));
 
-        verify(bookRepository).findById(anyLong());
+        verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
 }
