@@ -24,8 +24,8 @@ public class UserServiceImpl implements UserService {
     private final AuthorizeService authorizeService;
 
     public Long addUser(User user){
-        User savedUser = userRepository.save(user);
-        return savedUser.getId();
+        userRepository.save(user);
+        return user.getId();
     }
 
     public void updateUser(User updateUser, Long userId, Authentication authentication){

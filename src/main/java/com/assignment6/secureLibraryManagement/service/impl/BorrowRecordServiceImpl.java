@@ -64,16 +64,20 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         return recordSaved.getId();
     }
 
-    public BorrowRecord returnBook(Long borrowRecordId){
+    public void returnBook(Long borrowRecordId){
         BorrowRecord borrowRecord = borrowRecordRepository.findById(borrowRecordId)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new BorrowRecordNotFoundException("Borrow record not found"));
         borrowRecord.setReturnDate(LocalDateTime.now());
         borrowRecord.setStatus(BorrowStatus.RETURNED);
 
         Book book = borrowRecord.getBook();
         updateBookCopy(book, book.getAvailableCopies() - 1);
 
-        return borrowRecordRepository.save(borrowRecord);
+        borrowRecordRepository.save(borrowRecord);
+    }
+
+    public BorrowRecord getRecord(Long borrowRecordId){
+        return borrowRecordRepository.findById(borrowRecordId).orElseThrow(() -> new BorrowRecordNotFoundException("Record not found!"));
     }
 
     public List<BorrowRecord> getBookRecords(String emailAddress){

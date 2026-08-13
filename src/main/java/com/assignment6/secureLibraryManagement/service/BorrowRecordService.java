@@ -22,7 +22,9 @@ public interface BorrowRecordService {
     @Transactional
     Long borrowBook(String emailAddress, Long bookId);
 
-    BorrowRecord returnBook(Long borrowRecordId);
+    void returnBook(Long borrowRecordId);
+
+    BorrowRecord getRecord(Long borrowRecordId);
 
     List<BorrowRecord> getBookRecords(String emailAddress);
 }

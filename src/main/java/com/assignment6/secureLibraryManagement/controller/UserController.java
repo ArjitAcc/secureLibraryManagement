@@ -24,8 +24,14 @@ public class UserController {
     }
 
     @PutMapping("/return/{borrow-id}")
-    public ResponseEntity<BorrowRecordResponseJO> updateBorrowRecordToReturn(@PathVariable("borrow-id") Long borrowId){
-        return ResponseEntity.ok(borrowRecordJOMapper.mapToPOJO(borrowRecordService.returnBook(borrowId)));
+    public ResponseEntity<Void> updateBorrowRecordToReturn(@PathVariable("borrow-id") Long borrowId){
+        borrowRecordService.returnBook(borrowId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{record-id}")
+    public ResponseEntity<BorrowRecordResponseJO> getRecord(@PathVariable("record-id") Long recordId){
+        return ResponseEntity.ok(borrowRecordJOMapper.mapToPOJO(borrowRecordService.getRecord(recordId)));
     }
 
     @GetMapping("/my-books")
