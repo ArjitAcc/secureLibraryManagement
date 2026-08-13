@@ -1,5 +1,6 @@
 package com.assignment6.secureLibraryManagement.service;
 
+import com.assignment6.secureLibraryManagement.exception.BookNotFoundException;
 import com.assignment6.secureLibraryManagement.jo.BookRequestJO;
 import com.assignment6.secureLibraryManagement.jo.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
@@ -23,145 +24,131 @@ import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class BookServiceTest {
+
     @Mock
     BookRepository bookRepository;
     @InjectMocks
     BookServiceImpl bookService;
+
+    long MOCK_BOOK_ID = 1001L;
+    long MOCK_OTHER_BOOK_ID = 1002L;
+
+    private static Book buildBook1(Long id){
+        Book book1 = new Book("Book1 Title", "Book1 Author", "Book1 ISBN", 340, 2);
+        book1.setId(id);
+        return book1;
+    }
+
+    private Book buildBook2(Long id){
+        Book book2 = new Book("Book2 Title", "Book2 Author", "Book2 ISBN", 430, 1);
+        book2.setId(id);
+        return book2;
+    }
+
     @Test
     void addBookShouldAddBookSuccessfully(){
-//        BookRequestJO bookRequestJO = new BookRequestJO("DTO Title", "DTO Author", "DTO ISBN", 800, 2);
-        Book savedBook = new Book();
-        savedBook.setId(1001L);
-        savedBook.setTitle("Book Title");
-        savedBook.setAuthor("Book Author");
-        savedBook.setIsbn("Book ISBN");
-        savedBook.setPrice(450);
-        savedBook.setAvailableCopies(2);
-        when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
 
-        BookResponseJO book = bookService.addBook(savedBook);
+        Book book = buildBook1(null);
+        when(bookRepository.save(book)).thenAnswer(invocation -> {
+            book.setId(MOCK_BOOK_ID);
+            return book;
+        });
 
-        assertNotNull(savedBook);
-        assertEquals(savedBook.getId(), book.id());
+        Long bookId = bookService.addBook(book);
+
+        assertEquals(MOCK_BOOK_ID, bookId);
+        verify(bookRepository).save(book);
     }
 
     @Test
     void deleteBookShouldDeleteBookSuccessfully(){
-        Long id = 1L;
-        when(bookRepository.existsById(id)).thenReturn(true);
-        doNothing().when(bookRepository).deleteById(anyLong());
-        bookService.deleteBook(id);
-        verify(bookRepository, times(1)).deleteById(id);
+        when(bookRepository.existsById(anyLong())).thenReturn(true);
+
+        bookService.deleteBook(MOCK_BOOK_ID);
+
+        verify(bookRepository).existsById(MOCK_BOOK_ID);
+        verify(bookRepository).deleteById(MOCK_BOOK_ID);
     }
 
     @Test
     void deleteBookShouldDoNothingWhenBookDoesNotExist(){
-        Long id = 10L;
-        when(bookRepository.existsById(id)).thenReturn(false);
-        bookService.deleteBook(id);
-        verify(bookRepository, never()).deleteById(id);
-    }
+        when(bookRepository.existsById(anyLong())).thenReturn(false);
 
-    // generally a bad practice to test private methods
-    @Test
-    void testPrivateMethod_ValidateProductIdIfIdIsValid() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Long id = 1L;
-        Method validateBookId = BookService.class.getDeclaredMethod("validateBookId", Long.class);
-        validateBookId.setAccessible(true);
-        boolean isValid = (boolean) validateBookId.invoke(bookService, id);
-        assertTrue(isValid);
-    }
+        bookService.deleteBook(MOCK_BOOK_ID);
 
-    @Test
-    void testPrivateMethod_ValidateProductIfIdIsInvalid() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Long id = -1L;
-        Method validateBookId = BookService.class.getDeclaredMethod("validateBookId", Long.class);
-        validateBookId.setAccessible(true);
-        boolean isValid = (boolean) validateBookId.invoke(bookService, id);
-        assertFalse(isValid);
+        verify(bookRepository).existsById(MOCK_BOOK_ID);
+        verify(bookRepository, never()).deleteById(MOCK_BOOK_ID);
     }
 
     @Test
     void getAllBooksShouldGetAllBooksSuccessfully(){
         List<Book> books = new ArrayList<>();
-        Book book1 = new Book();
-        book1.setId(1001L);
-        book1.setTitle("Book1 Title");
-        book1.setAuthor("Book1 Author");
-        book1.setIsbn("Book1 ISBN");
-        book1.setPrice(340);
-        book1.setAvailableCopies(2);
-
-        Book book2 = new Book();
-        book1.setId(1001L);
-        book1.setTitle("Book2 Title");
-        book1.setAuthor("Book2 Author");
-        book1.setIsbn("Book2 ISBN");
-        book1.setPrice(430);
-        book1.setAvailableCopies(1);
-
+        Book book1 = buildBook1(MOCK_BOOK_ID);
+        Book book2 = buildBook2(MOCK_OTHER_BOOK_ID);
         books.add(book1);
         books.add(book2);
-
         when(bookRepository.findAll()).thenReturn(books);
 
-        List<BookResponseJO> booksReturned = bookService.getALlBooks();
+        List<Book> booksReturned = bookService.getAllBooks();
 
-        verify(bookRepository).findAll();
-        assertNotNull(booksReturned);
         assertEquals(books.size(), booksReturned.size());
         for(int i = 0; i < books.size(); i++){
-            assertEquals(books.get(i).getId(), booksReturned.get(i).id());
+            assertEquals(books.get(i).getId(), booksReturned.get(i).getId());
+            assertEquals(books.get(i).getAvailableCopies(), booksReturned.get(i).getAvailableCopies());
+            assertEquals(books.get(i).getTitle(), booksReturned.get(i).getTitle());
+            assertEquals(books.get(i).getAuthor(), booksReturned.get(i).getAuthor());
+            assertEquals(books.get(i).getPrice(), booksReturned.get(i).getPrice());
         }
+        verify(bookRepository).findAll();
     }
 
     @Test
     void updateBookShouldUpdateBookSuccessfully(){
-        Long id = 1L;
-        Book book = new Book();
-        book.setId(1001L);
-        book.setTitle("Book Orignal Title");
-        book.setAuthor("Book Author");
-        book.setIsbn("Book ISBN");
-        book.setPrice(400);
-        book.setAvailableCopies(1);
-        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+        Book book = buildBook1(MOCK_BOOK_ID);
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
+        Book updatedBook = buildBook2(MOCK_BOOK_ID);
+        when(bookRepository.save(isA(Book.class))).thenReturn(updatedBook);
 
-        BookRequestJO bookRequestJO = new BookRequestJO("Book Updated Title", "Book Author", "Book ISBN", 800, 1);
+        bookService.updateBook(updatedBook, MOCK_BOOK_ID);
 
-        Book savedBook = new Book();
-        savedBook.setId(1001L);
-        savedBook.setTitle("Book Updated Title");
-        savedBook.setAuthor("Book Author");
-        savedBook.setIsbn("Book ISBN");
-        book.setPrice(800);
-        savedBook.setAvailableCopies(1);
+        assertEquals(MOCK_BOOK_ID, updatedBook.getId());
+        verify(bookRepository).save(updatedBook);
+        verify(bookRepository).findById(MOCK_BOOK_ID);
+    }
 
-        when(bookRepository.save(any(Book.class))).thenReturn(savedBook);
-        BookResponseJO updatedBook = bookService.updateBook(bookRequestJO, id);
+    @Test
+    void updateBookShouldThrowErrorWhenBookDoesNotExist(){
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+        Book updatedBook = buildBook2(MOCK_BOOK_ID);
 
-        assertNotNull(updatedBook);
-        assertEquals(savedBook.getId(), updatedBook.id());
-        assertEquals(savedBook.getTitle(), updatedBook.title());
-        assertEquals(savedBook.getAuthor(), updatedBook.author());
-        assertEquals(savedBook.getIsbn(), updatedBook.isbn());
-        assertEquals(savedBook.getPrice(), updatedBook.price());
-        assertEquals(savedBook.getAvailableCopies(), updatedBook.availableCopies());
+        assertThrows(BookNotFoundException.class, () -> bookService.updateBook(updatedBook, MOCK_BOOK_ID));
+
+        verify(bookRepository, never()).save(updatedBook);
+        verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
     @Test
     void getBookShouldGetBookSuccessfully(){
-        Long id = 1L;
-        Book book = new Book();
-        book.setId(1001L);
-        book.setTitle("Book1 Title");
-        book.setAuthor("Book1 Author");
-        book.setIsbn("Book1 ISBN");
-        book.setPrice(340);
-        book.setAvailableCopies(2);
-        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
-        BookResponseJO bookReturned = bookService.getBook(id);
-        assertEquals(bookReturned.id(), book.getId());
+        Book book = buildBook1(MOCK_BOOK_ID);
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
+
+        Book bookReturned = bookService.getBook(MOCK_BOOK_ID);
+
+        assertEquals(book.getId(), bookReturned.getId());
+        assertEquals(book.getAvailableCopies(), bookReturned.getAvailableCopies());
+        assertEquals(book.getTitle(), bookReturned.getTitle());
+        assertEquals(book.getAuthor(), bookReturned.getAuthor());
+        assertEquals(book.getPrice(), bookReturned.getPrice());
+        verify(bookRepository).findById(MOCK_BOOK_ID);
+    }
+
+    @Test
+    void getBookShouldThrowErrorWhenBookDoesNotExist(){
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(BookNotFoundException.class, () -> bookService.getBook(MOCK_BOOK_ID));
+
+        verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
 }
