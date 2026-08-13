@@ -25,6 +25,11 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BorrowRecordServiceTest {
+    String MOCK_USER_EMAIL = "email@domain.com";
+    Long MOCK_USER_ID = 1L;
+    Long MOCK_BOOK_ID = 1001L;
+    Long MOCK_BORROW_RECORD_ID = 101L;
+
     @Mock
     BorrowRecordRepository borrowRecordRepository;
     @Mock
@@ -33,31 +38,10 @@ class BorrowRecordServiceTest {
     BookRepository bookRepository;
     @Mock
     UserValidationService userValidationService;
+    @Mock
+    BookService bookService;
     @InjectMocks
     BorrowRecordServiceImpl borrowRecordService;
-
-    String MOCK_USER_EMAIL = "email@domain.com";
-    Long MOCK_USER_ID = 1L;
-    Long MOCK_BOOK_ID = 1001L;
-    Long MOCK_BORROW_RECORD_ID = 101L;
-
-    private User buildUser(){
-        User user = new User("name", MOCK_USER_EMAIL, "address", Role.USER, "password", true);
-        user.setId(MOCK_USER_ID);
-        return user;
-    }
-
-    private Book buildBook(){
-        Book book = new Book("Book Title", "Book Author", "Book ISBN", 450, 2);
-        book.setId(MOCK_BOOK_ID);
-        return book;
-    }
-
-    private BorrowRecord buildBorrowRecord(User user, Book book, Long id){
-        BorrowRecord record = new BorrowRecord(user, book, LocalDateTime.now(), null, BorrowStatus.BORROWED);
-        record.setId(id);
-        return record;
-    }
 
     @Test
     void borrowBookShouldBorrowBookSuccessfully() {
@@ -66,7 +50,7 @@ class BorrowRecordServiceTest {
         User user = buildUser();
         Book book = buildBook();
         when(userRepository.findByEmailAddress(isA(String.class))).thenReturn(Optional.of(user));
-        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
+        when(bookService.getBook(anyLong())).thenReturn(book);
         when(borrowRecordRepository.existsByUserAndBookAndStatus(isA(User.class), any(Book.class), any(BorrowStatus.class))).thenReturn(false);
         when(borrowRecordRepository.save(isA(BorrowRecord.class))).thenAnswer(invocation -> {
             BorrowRecord record = invocation.getArgument(0);
@@ -80,7 +64,7 @@ class BorrowRecordServiceTest {
         assertEquals(1, book.getAvailableCopies());
         verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
         verify(userValidationService).validateUser(MOCK_USER_ID);
-        verify(bookRepository).findById(MOCK_BOOK_ID);
+        verify(bookService).getBook(MOCK_BOOK_ID);
         verify(borrowRecordRepository).existsByUserAndBookAndStatus(user, book, BorrowStatus.BORROWED);
         ArgumentCaptor<BorrowRecord> recordCaptor = ArgumentCaptor.forClass(BorrowRecord.class);
         verify(borrowRecordRepository).save(recordCaptor.capture());
@@ -156,4 +140,22 @@ class BorrowRecordServiceTest {
 //            assertNull(recordResponseJOList.get(i).returnDate());
 //        }
 //    }
+
+    private User buildUser(){
+        User user = new User("name", MOCK_USER_EMAIL, "address", Role.USER, "password", true);
+        user.setId(MOCK_USER_ID);
+        return user;
+    }
+
+    private Book buildBook(){
+        Book book = new Book("Book Title", "Book Author", "Book ISBN", 450, 2);
+        book.setId(MOCK_BOOK_ID);
+        return book;
+    }
+
+    private BorrowRecord buildBorrowRecord(User user, Book book, Long id){
+        BorrowRecord record = new BorrowRecord(user, book, LocalDateTime.now(), null, BorrowStatus.BORROWED);
+        record.setId(id);
+        return record;
+    }
 }
