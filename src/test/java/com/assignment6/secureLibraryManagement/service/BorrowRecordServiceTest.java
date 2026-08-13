@@ -1,85 +1,100 @@
-//package com.assignment6.secureLibraryManagement.service;
-//
-//import com.assignment6.secureLibraryManagement.jo.BorrowRecordResponseJO;
-//import com.assignment6.secureLibraryManagement.entity.*;
-//import com.assignment6.secureLibraryManagement.repository.BookRepository;
-//import com.assignment6.secureLibraryManagement.repository.BorrowRecordRepository;
-//import com.assignment6.secureLibraryManagement.repository.UserRepository;
-//import com.assignment6.secureLibraryManagement.service.impl.BorrowRecordServiceImpl;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.InjectMocks;
-//import org.mockito.Mock;
-//import org.mockito.Mockito;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//
-//import java.time.LocalDateTime;
-//import java.util.List;
-//import java.util.Optional;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.*;
-//
-//@ExtendWith(MockitoExtension.class)
-//class BorrowRecordServiceTest {
-//    @Mock
-//    BorrowRecordRepository borrowRecordRepository;
-//    @Mock
-//    UserRepository userRepository;
-//    @Mock
-//    BookRepository bookRepository;
-//    @Mock
-//    UserValidationService userValidationService;
-//    @InjectMocks
-//    BorrowRecordServiceImpl borrowRecordService;
-//
-//    User user;
-//    Book book;
-//
-//    @BeforeEach
-//    void init(){
-//        user = new User("name", "email@domain.com", "address", Role.USER, "password", true);
-//        user.setId(1L);
-//        book = new Book();
-//        book.setId(1001L);
-//        book.setTitle("Book Title");
-//        book.setAuthor("Book Author");
-//        book.setIsbn("Book ISBN");
-//        book.setPrice(450);
-//        book.setAvailableCopies(2);
-//    }
-//
-//    @Test
-//    void borrowBookShouldBorrowBookSuccessfully() {
-//        String userEmail = user.getEmailAddress();
-//        Long bookId = book.getId();
-//        Mockito.when(userRepository.findByEmailAddress(userEmail)).thenReturn(Optional.of(user));
-//        doNothing().when(userValidationService).validateUser(user.getId());
-//        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
-//        when(borrowRecordRepository.existsByUserAndBookAndStatus(user, book, BorrowStatus.BORROWED)).thenReturn(false);
-//        BorrowRecord record = new BorrowRecord();
-//        record.setId(101L);
-//        record.setUser(user);
-//        record.setBook(book);
-//        record.setBorrowDate(LocalDateTime.now());
-//        record.setStatus(BorrowStatus.BORROWED);
-//
-//        when(borrowRecordRepository.save(any(BorrowRecord.class))).thenReturn(record);
-//        when(bookRepository.save(book)).thenReturn(book);
-//        BorrowRecordResponseJO recordResponseJO = borrowRecordService.borrowBook(userEmail, bookId);
-//        assertEquals(record.getId(), recordResponseJO.id());
-//        assertEquals(user, recordResponseJO.user());
-//        assertEquals(book, recordResponseJO.book());
-//        assertEquals(BorrowStatus.BORROWED, recordResponseJO.status());
-//        assertNotNull(recordResponseJO.borrowDate());
-//        assertNull(recordResponseJO.returnDate());
-//        assertEquals(1, book.getAvailableCopies());
-//        verify(userValidationService).validateUser(user.getId());
-//        verify(bookRepository).save(book);
-//    }
-//
+package com.assignment6.secureLibraryManagement.service;
+
+import com.assignment6.secureLibraryManagement.jo.BorrowRecordResponseJO;
+import com.assignment6.secureLibraryManagement.entity.*;
+import com.assignment6.secureLibraryManagement.repository.BookRepository;
+import com.assignment6.secureLibraryManagement.repository.BorrowRecordRepository;
+import com.assignment6.secureLibraryManagement.repository.UserRepository;
+import com.assignment6.secureLibraryManagement.service.impl.BorrowRecordServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class BorrowRecordServiceTest {
+    @Mock
+    BorrowRecordRepository borrowRecordRepository;
+    @Mock
+    UserRepository userRepository;
+    @Mock
+    BookRepository bookRepository;
+    @Mock
+    UserValidationService userValidationService;
+    @InjectMocks
+    BorrowRecordServiceImpl borrowRecordService;
+
+    String MOCK_USER_EMAIL = "email@domain.com";
+    Long MOCK_USER_ID = 1L;
+    Long MOCK_BOOK_ID = 1001L;
+    Long MOCK_BORROW_RECORD_ID = 101L;
+
+    private User buildUser(){
+        User user = new User("name", MOCK_USER_EMAIL, "address", Role.USER, "password", true);
+        user.setId(MOCK_USER_ID);
+        return user;
+    }
+
+    private Book buildBook(){
+        Book book = new Book("Book Title", "Book Author", "Book ISBN", 450, 2);
+        book.setId(MOCK_BOOK_ID);
+        return book;
+    }
+
+    private BorrowRecord buildBorrowRecord(User user, Book book, Long id){
+        BorrowRecord record = new BorrowRecord(user, book, LocalDateTime.now(), null, BorrowStatus.BORROWED);
+        record.setId(id);
+        return record;
+    }
+
+    @Test
+    void borrowBookShouldBorrowBookSuccessfully() {
+        String userEmail = MOCK_USER_EMAIL;
+        Long bookId = MOCK_BOOK_ID;
+        User user = buildUser();
+        Book book = buildBook();
+        when(userRepository.findByEmailAddress(isA(String.class))).thenReturn(Optional.of(user));
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
+        when(borrowRecordRepository.existsByUserAndBookAndStatus(isA(User.class), any(Book.class), any(BorrowStatus.class))).thenReturn(false);
+        when(borrowRecordRepository.save(isA(BorrowRecord.class))).thenAnswer(invocation -> {
+            BorrowRecord record = invocation.getArgument(0);
+            record.setId(MOCK_BORROW_RECORD_ID);
+            return record;
+        });
+
+        Long recordId = borrowRecordService.borrowBook(userEmail, bookId);
+
+        assertEquals(recordId, MOCK_BORROW_RECORD_ID);
+        assertEquals(1, book.getAvailableCopies());
+        verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
+        verify(userValidationService).validateUser(MOCK_USER_ID);
+        verify(bookRepository).findById(MOCK_BOOK_ID);
+        verify(borrowRecordRepository).existsByUserAndBookAndStatus(user, book, BorrowStatus.BORROWED);
+        ArgumentCaptor<BorrowRecord> recordCaptor = ArgumentCaptor.forClass(BorrowRecord.class);
+        verify(borrowRecordRepository).save(recordCaptor.capture());
+        BorrowRecord record = recordCaptor.getValue();
+        assertEquals(user, record.getUser());
+        assertEquals(book, record.getBook());
+        assertEquals(BorrowStatus.BORROWED, record.getStatus());
+        assertNotNull(record.getBorrowDate());
+        assertEquals(101L, record.getId());
+        verify(bookRepository).save(book);
+    }
+
+
+
 //    @Test
 //    void returnBookShouldReturnBookSuccessfully() {
 //        BorrowRecord record = new BorrowRecord();
@@ -141,4 +156,4 @@
 //            assertNull(recordResponseJOList.get(i).returnDate());
 //        }
 //    }
-//}
+}

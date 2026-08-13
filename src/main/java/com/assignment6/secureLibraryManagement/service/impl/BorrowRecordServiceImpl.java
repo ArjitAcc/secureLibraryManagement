@@ -57,11 +57,11 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         record.setBook(book);
         record.setBorrowDate(LocalDateTime.now());
         record.setStatus(BorrowStatus.BORROWED);
-        BorrowRecord recordSaved = borrowRecordRepository.save(record);
+        borrowRecordRepository.save(record);
 
         updateBookCopy(book, book.getAvailableCopies() - 1);
 
-        return recordSaved.getId();
+        return record.getId();
     }
 
     public void returnBook(Long borrowRecordId){
