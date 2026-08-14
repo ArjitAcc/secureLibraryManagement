@@ -1,19 +1,19 @@
 package com.assignment6.secureLibraryManagement.service;
 
-import com.assignment6.secureLibraryManagement.jo.BorrowRecordResponseJO;
 import com.assignment6.secureLibraryManagement.entity.*;
+import com.assignment6.secureLibraryManagement.exception.*;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
 import com.assignment6.secureLibraryManagement.repository.BorrowRecordRepository;
 import com.assignment6.secureLibraryManagement.repository.UserRepository;
 import com.assignment6.secureLibraryManagement.service.impl.BorrowRecordServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,14 +21,17 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BorrowRecordServiceTest {
     String MOCK_USER_EMAIL = "email@domain.com";
-    Long MOCK_USER_ID = 1L;
+    long MOCK_USER_ID = 1L;
     Long MOCK_BOOK_ID = 1001L;
     Long MOCK_BORROW_RECORD_ID = 101L;
+    Long MOCK_OTHER_BORROW_RECORD_ID = 101L;
+    int MOCK_BOOK_AVAILABLE_COPIES = 2;
 
     @Mock
     BorrowRecordRepository borrowRecordRepository;
@@ -45,101 +48,160 @@ class BorrowRecordServiceTest {
 
     @Test
     void borrowBookShouldBorrowBookSuccessfully() {
-        String userEmail = MOCK_USER_EMAIL;
-        Long bookId = MOCK_BOOK_ID;
         User user = buildUser();
-        Book book = buildBook();
+        Book book = buildBook(MOCK_BOOK_AVAILABLE_COPIES);
         when(userRepository.findByEmailAddress(isA(String.class))).thenReturn(Optional.of(user));
         when(bookService.getBook(anyLong())).thenReturn(book);
-        when(borrowRecordRepository.existsByUserAndBookAndStatus(isA(User.class), any(Book.class), any(BorrowStatus.class))).thenReturn(false);
+        when(borrowRecordRepository.existsByUserAndBookAndStatus(isA(User.class), isA(Book.class), isA(BorrowStatus.class))).thenReturn(false);
         when(borrowRecordRepository.save(isA(BorrowRecord.class))).thenAnswer(invocation -> {
             BorrowRecord record = invocation.getArgument(0);
             record.setId(MOCK_BORROW_RECORD_ID);
             return record;
         });
 
-        Long recordId = borrowRecordService.borrowBook(userEmail, bookId);
-
-        assertEquals(recordId, MOCK_BORROW_RECORD_ID);
+        assertThat(borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID)).isEqualTo(MOCK_BORROW_RECORD_ID);
         assertEquals(1, book.getAvailableCopies());
+
         verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
         verify(userValidationService).validateUser(MOCK_USER_ID);
         verify(bookService).getBook(MOCK_BOOK_ID);
         verify(borrowRecordRepository).existsByUserAndBookAndStatus(user, book, BorrowStatus.BORROWED);
-        ArgumentCaptor<BorrowRecord> recordCaptor = ArgumentCaptor.forClass(BorrowRecord.class);
-        verify(borrowRecordRepository).save(recordCaptor.capture());
-        BorrowRecord record = recordCaptor.getValue();
-        assertEquals(user, record.getUser());
-        assertEquals(book, record.getBook());
-        assertEquals(BorrowStatus.BORROWED, record.getStatus());
-        assertNotNull(record.getBorrowDate());
-        assertEquals(101L, record.getId());
-        verify(bookRepository).save(book);
+        verify(borrowRecordRepository).save(refEq(buildBorrowRecord(user, book), "borrowDate"));
+        verify(bookRepository).save(ArgumentMatchers.same(book));
     }
 
+    @Test
+    void borrowBookShouldThrowErrorWhenUserNotFound() {
+        when(userRepository.findByEmailAddress(MOCK_USER_EMAIL)).thenReturn(Optional.empty());
 
+        assertThrows(UserNotFoundException.class, () -> borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID));
 
-//    @Test
-//    void returnBookShouldReturnBookSuccessfully() {
-//        BorrowRecord record = new BorrowRecord();
-//        record.setId(101L);
-//        record.setUser(user);
-//        record.setBook(book);
-//        record.setBorrowDate(LocalDateTime.now());
-//        record.setStatus(BorrowStatus.BORROWED);
-//
-//        when(borrowRecordRepository.findById(record.getId())).thenReturn(Optional.of(record));
-//        Book bookReturned = record.getBook();
-//        when(bookRepository.save(bookReturned)).thenReturn(bookReturned);
-//        record.setStatus(BorrowStatus.RETURNED);
-//        when(borrowRecordRepository.save(record)).thenReturn(record);
-//        BorrowRecordResponseJO recordResponseJO = borrowRecordService.returnBook(record.getId());
-//        assertEquals(record.getId(), recordResponseJO.id());
-//        assertEquals(user, recordResponseJO.user());
-//        assertEquals(book, recordResponseJO.book());
-//        assertEquals(BorrowStatus.RETURNED, recordResponseJO.status());
-//        assertNotNull(recordResponseJO.borrowDate());
-//        assertNotNull(recordResponseJO.returnDate());
-//        assertEquals(3, book.getAvailableCopies());
-//    }
-//
-//    @Test
-//    void getBookRecordsShouldGetBookRecordsSuccessfully() {
-//        BorrowRecord record1 = new BorrowRecord();
-//        record1.setId(101L);
-//        record1.setUser(user);
-//        record1.setBook(book);
-//        record1.setBorrowDate(LocalDateTime.now());
-//        record1.setStatus(BorrowStatus.BORROWED);
-//
-//        Book book1 = new Book();
-//        book1.setId(1002L);
-//        book1.setTitle("Book Title1");
-//        book1.setAuthor("Book Author1");
-//        book1.setIsbn("Book ISBN1");
-//        book1.setPrice(250);
-//        book1.setAvailableCopies(1);
-//
-//        BorrowRecord record2 = new BorrowRecord();
-//        record2.setId(101L);
-//        record2.setUser(user);
-//        record2.setBook(book1);
-//        record2.setBorrowDate(LocalDateTime.now());
-//        record2.setStatus(BorrowStatus.BORROWED);
-//
-//        List<BorrowRecord> records = List.of(record1, record2);
-//        when(borrowRecordRepository.findByUserEmailAddress(user.getEmailAddress())).thenReturn(records);
-//        List<BorrowRecordResponseJO> recordResponseJOList = borrowRecordService.getBookRecords(user.getEmailAddress());
-//        assertEquals(records.size(), recordResponseJOList.size());
-//        for(int i = 0; i < records.size(); i++){
-//            assertEquals(records.get(i).getId(), recordResponseJOList.get(i).id());
-//            assertEquals(records.get(i).getUser(), recordResponseJOList.get(i).user());
-//            assertEquals(records.get(i).getBook(), recordResponseJOList.get(i).book());
-//            assertEquals(records.get(i).getStatus(), recordResponseJOList.get(i).status());
-//            assertNotNull(recordResponseJOList.get(i).borrowDate());
-//            assertNull(recordResponseJOList.get(i).returnDate());
-//        }
-//    }
+        verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
+        verifyNoInteractions(userValidationService, bookService, borrowRecordRepository, bookRepository);
+    }
+
+    @Test
+    void borrowBookShouldThrowErrorWhenUserNotActive() {
+        User user = buildUser();
+        when(userRepository.findByEmailAddress(MOCK_USER_EMAIL)).thenReturn(Optional.of(user));
+        doThrow(new UserNotActiveException("User not active")).when(userValidationService).validateUser(MOCK_USER_ID);
+
+        assertThrows(UserNotActiveException.class, () -> borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID));
+
+        verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
+        verify(userValidationService).validateUser(MOCK_USER_ID);
+        verifyNoInteractions(bookService, borrowRecordRepository, bookRepository);
+    }
+
+    @Test
+    void borrowBookShouldThrowErrorWhenBookNotFound() {
+        User user = buildUser();
+        when(userRepository.findByEmailAddress(MOCK_USER_EMAIL)).thenReturn(Optional.of(user));
+        doThrow(new BookNotFoundException("Book not found")).when(bookService).getBook(MOCK_BOOK_ID);
+
+        assertThrows(BookNotFoundException.class, () -> borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID));
+
+        verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
+        verify(userValidationService).validateUser(MOCK_USER_ID);
+        verify(bookService).getBook(MOCK_BOOK_ID);
+        verifyNoInteractions(borrowRecordRepository, bookRepository);
+    }
+
+    @Test
+    void borrowBookShouldThrowErrorWhenBookNotAvailable() {
+        User user = buildUser();
+        Book book = buildBook(0);
+        when(userRepository.findByEmailAddress(MOCK_USER_EMAIL)).thenReturn(Optional.of(user));
+        when(bookService.getBook(MOCK_BOOK_ID)).thenReturn(book);
+
+        assertThrows(BookNotAvailableException.class, () -> borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID));
+
+        verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
+        verify(userValidationService).validateUser(MOCK_USER_ID);
+        verify(bookService).getBook(MOCK_BOOK_ID);
+        verifyNoInteractions(borrowRecordRepository, bookRepository);
+    }
+
+    @Test
+    void borrowBookShouldThrowErrorWhenBookAlreadyBorrowed() {
+        User user = buildUser();
+        Book book = buildBook(MOCK_BOOK_AVAILABLE_COPIES);
+        when(userRepository.findByEmailAddress(MOCK_USER_EMAIL)).thenReturn(Optional.of(user));
+        when(bookService.getBook(MOCK_BOOK_ID)).thenReturn(book);
+        when(borrowRecordRepository.existsByUserAndBookAndStatus(isA(User.class), isA(Book.class), isA(BorrowStatus.class))).thenReturn(true);
+
+        assertThrows(AlreadyBorrowedException.class, () -> borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID));
+
+        verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
+        verify(userValidationService).validateUser(MOCK_USER_ID);
+        verify(bookService).getBook(MOCK_BOOK_ID);
+        verify(borrowRecordRepository).existsByUserAndBookAndStatus(user, book, BorrowStatus.BORROWED);
+        verify(borrowRecordRepository, never()).save(isA(BorrowRecord.class));
+        verify(bookRepository, never()).save(isA(Book.class));
+    }
+
+    @Test
+    void getRecordShouldGetRecordSuccessfully(){
+        User user = buildUser();
+        Book book = buildBook(MOCK_BOOK_AVAILABLE_COPIES);
+        BorrowRecord record = buildBorrowRecord(user, book);
+        when(borrowRecordRepository.findById(anyLong())).thenReturn(Optional.of(record));
+
+        assertThat(borrowRecordService.getRecord(MOCK_BORROW_RECORD_ID)).isEqualTo(record);
+
+        verify(borrowRecordRepository).findById(MOCK_BORROW_RECORD_ID);
+    }
+
+    @Test
+    void getRecordShouldThrowErrorWhenBorrowRecordNotFound(){
+        when(borrowRecordRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(BorrowRecordNotFoundException.class, () -> borrowRecordService.getRecord(MOCK_BORROW_RECORD_ID));
+
+        verify(borrowRecordRepository).findById(MOCK_BORROW_RECORD_ID);
+    }
+
+    @Test
+    void returnBookShouldReturnBookSuccessfully(){
+        User user = buildUser();
+        Book book = buildBook(MOCK_BOOK_AVAILABLE_COPIES);
+        BorrowRecord record = buildBorrowRecord(user, book);
+        when(borrowRecordRepository.findById(anyLong())).thenReturn(Optional.of(record));
+
+        borrowRecordService.returnBook(MOCK_BORROW_RECORD_ID);
+
+        assertEquals(MOCK_BORROW_RECORD_ID, record.getId());
+        assertEquals(BorrowStatus.RETURNED, record.getStatus());
+        assertNotNull(record.getReturnDate());
+        assertEquals(MOCK_BOOK_AVAILABLE_COPIES+1, book.getAvailableCopies());
+        verify(bookRepository).save(ArgumentMatchers.same(book));
+        verify(borrowRecordRepository).save(ArgumentMatchers.same(record));
+    }
+
+    @Test
+    void returnBookShouldThrowErrorWhenBorrowRecordNotFound(){
+        when(borrowRecordRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(BorrowRecordNotFoundException.class, () -> borrowRecordService.returnBook(MOCK_BORROW_RECORD_ID));
+
+        verify(borrowRecordRepository).findById(MOCK_BORROW_RECORD_ID);
+        verify(bookRepository, never()).save(isA(Book.class));
+        verify(bookRepository, never()).save(isA(Book.class));
+    }
+
+    @Test
+    void getBookRecordsShouldGetBookRecordsSuccessfully(){
+        User user = buildUser();
+        Book book = buildBook(MOCK_BOOK_AVAILABLE_COPIES);
+        BorrowRecord record = buildBorrowRecord(user, book);
+        BorrowRecord record1 = buildBorrowRecord1(user, book);
+        List<BorrowRecord> records = List.of(record, record1);
+        when(borrowRecordRepository.findByUserEmailAddress(isA(String.class))).thenReturn(records);
+
+        assertThat(borrowRecordService.getBookRecords(MOCK_USER_EMAIL)).isEqualTo(records);
+
+        verify(borrowRecordRepository).findByUserEmailAddress(MOCK_USER_EMAIL);
+    }
 
     private User buildUser(){
         User user = new User("name", MOCK_USER_EMAIL, "address", Role.USER, "password", true);
@@ -147,15 +209,21 @@ class BorrowRecordServiceTest {
         return user;
     }
 
-    private Book buildBook(){
-        Book book = new Book("Book Title", "Book Author", "Book ISBN", 450, 2);
+    private Book buildBook(int copies){
+        Book book = new Book("Book Title", "Book Author", "Book ISBN", 450, copies);
         book.setId(MOCK_BOOK_ID);
         return book;
     }
 
-    private BorrowRecord buildBorrowRecord(User user, Book book, Long id){
+    private BorrowRecord buildBorrowRecord(User user, Book book){
         BorrowRecord record = new BorrowRecord(user, book, LocalDateTime.now(), null, BorrowStatus.BORROWED);
-        record.setId(id);
+        record.setId(MOCK_BORROW_RECORD_ID);
+        return record;
+    }
+
+    private BorrowRecord buildBorrowRecord1(User user, Book book){
+        BorrowRecord record = new BorrowRecord(user, book, LocalDateTime.now().minusHours(1), LocalDateTime.now(), BorrowStatus.RETURNED);
+        record.setId(MOCK_OTHER_BORROW_RECORD_ID);
         return record;
     }
 }

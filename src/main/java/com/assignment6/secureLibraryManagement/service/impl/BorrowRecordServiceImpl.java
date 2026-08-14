@@ -92,7 +92,7 @@ public class BorrowRecordServiceImpl implements BorrowRecordService {
         BorrowRecord borrowRecord = getRecord(borrowRecordId);
         setBorrowStatus(borrowRecord, BorrowStatus.RETURNED);
         Book book = borrowRecord.getBook();
-        updateBookCopy(book, book.getAvailableCopies() - 1);
+        updateBookCopy(book, book.getAvailableCopies() + 1);
 
         borrowRecordRepository.save(borrowRecord);
     }
