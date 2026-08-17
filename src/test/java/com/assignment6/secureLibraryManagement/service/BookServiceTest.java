@@ -71,11 +71,7 @@ class BookServiceTest {
 
     @Test
     void getAllBooksShouldGetAllBooksSuccessfully(){
-        List<Book> books = new ArrayList<>();
-        Book book1 = buildBook1(MOCK_BOOK_ID);
-        Book book2 = buildBook2(MOCK_OTHER_BOOK_ID);
-        books.add(book1);
-        books.add(book2);
+        List<Book> books = List.of(buildBook1(MOCK_BOOK_ID), buildBook2(MOCK_OTHER_BOOK_ID));
         when(bookRepository.findAll()).thenReturn(books);
 
         assertThat(bookService.getAllBooks()).isEqualTo(books);

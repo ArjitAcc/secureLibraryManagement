@@ -8,7 +8,6 @@ import com.assignment6.secureLibraryManagement.repository.UserRepository;
 import com.assignment6.secureLibraryManagement.service.impl.BorrowRecordServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -130,7 +129,7 @@ class BorrowRecordServiceTest {
         when(bookService.getBook(MOCK_BOOK_ID)).thenReturn(book);
         when(borrowRecordRepository.existsByUserAndBookAndStatus(isA(User.class), isA(Book.class), isA(BorrowStatus.class))).thenReturn(true);
 
-        assertThrows(AlreadyBorrowedException.class, () -> borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID));
+        assertThrows(UserAlreadyBorrowedException.class, () -> borrowRecordService.borrowBook(MOCK_USER_EMAIL, MOCK_BOOK_ID));
 
         verify(userRepository).findByEmailAddress(MOCK_USER_EMAIL);
         verify(userValidationService).validateUser(MOCK_USER_ID);
@@ -141,22 +140,22 @@ class BorrowRecordServiceTest {
     }
 
     @Test
-    void getRecordShouldGetRecordSuccessfully(){
+    void getBorrowedBookRecordShouldGetBorrowedBookRecordSuccessfully(){
         User user = buildUser();
         Book book = buildBook(MOCK_BOOK_AVAILABLE_COPIES);
         BorrowRecord record = buildBorrowRecord(user, book);
         when(borrowRecordRepository.findById(anyLong())).thenReturn(Optional.of(record));
 
-        assertThat(borrowRecordService.getRecord(MOCK_BORROW_RECORD_ID)).isEqualTo(record);
+        assertThat(borrowRecordService.getBorrowedBookRecord(MOCK_BORROW_RECORD_ID)).isEqualTo(record);
 
         verify(borrowRecordRepository).findById(MOCK_BORROW_RECORD_ID);
     }
 
     @Test
-    void getRecordShouldThrowErrorWhenBorrowRecordNotFound(){
+    void getBorrowedBookRecordShouldThrowErrorWhenBorrowBorrowedBookRecordNotFound(){
         when(borrowRecordRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(BorrowRecordNotFoundException.class, () -> borrowRecordService.getRecord(MOCK_BORROW_RECORD_ID));
+        assertThrows(BorrowRecordNotFoundException.class, () -> borrowRecordService.getBorrowedBookRecord(MOCK_BORROW_RECORD_ID));
 
         verify(borrowRecordRepository).findById(MOCK_BORROW_RECORD_ID);
     }
@@ -190,15 +189,13 @@ class BorrowRecordServiceTest {
     }
 
     @Test
-    void getBookRecordsShouldGetBookRecordsSuccessfully(){
+    void getBorrowedBookRecordsShouldGetBorrowedBookRecordsSuccessfully(){
         User user = buildUser();
         Book book = buildBook(MOCK_BOOK_AVAILABLE_COPIES);
-        BorrowRecord record = buildBorrowRecord(user, book);
-        BorrowRecord record1 = buildBorrowRecord1(user, book);
-        List<BorrowRecord> records = List.of(record, record1);
+        List<BorrowRecord> records = List.of(buildBorrowRecord(user, book), buildBorrowRecord1(user, book));
         when(borrowRecordRepository.findByUserEmailAddress(isA(String.class))).thenReturn(records);
 
-        assertThat(borrowRecordService.getBookRecords(MOCK_USER_EMAIL)).isEqualTo(records);
+        assertThat(borrowRecordService.getBorrowedBookRecords(MOCK_USER_EMAIL)).isEqualTo(records);
 
         verify(borrowRecordRepository).findByUserEmailAddress(MOCK_USER_EMAIL);
     }
