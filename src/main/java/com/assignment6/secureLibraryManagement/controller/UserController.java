@@ -31,11 +31,11 @@ public class UserController {
 
     @GetMapping("/{record-id}")
     public ResponseEntity<BorrowRecordResponseJO> getRecord(@PathVariable("record-id") Long recordId){
-        return ResponseEntity.ok(borrowRecordJOMapper.mapToPOJO(borrowRecordService.getRecord(recordId)));
+        return ResponseEntity.ok(borrowRecordJOMapper.mapToPOJO(borrowRecordService.getBorrowedBookRecord(recordId)));
     }
 
     @GetMapping("/my-books")
     public ResponseEntity<List<BorrowRecordResponseJO>> getBorrowBooks(Principal principal){
-        return ResponseEntity.ok(borrowRecordService.getBookRecords(principal.getName()).stream().map(borrowRecordJOMapper::mapToPOJO).toList());
+        return ResponseEntity.ok(borrowRecordService.getBorrowedBookRecords(principal.getName()).stream().map(borrowRecordJOMapper::mapToPOJO).toList());
     }
 }

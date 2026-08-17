@@ -5,11 +5,14 @@ import com.assignment6.secureLibraryManagement.jo.BookRequestJO;
 import com.assignment6.secureLibraryManagement.jo.BookResponseJO;
 import com.assignment6.secureLibraryManagement.entity.Book;
 import com.assignment6.secureLibraryManagement.repository.BookRepository;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.assignment6.secureLibraryManagement.service.impl.BookServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.*;
@@ -25,25 +28,13 @@ import java.util.Optional;
 @ExtendWith(MockitoExtension.class)
 class BookServiceTest {
 
+    long MOCK_BOOK_ID = 1001L;
+    long MOCK_OTHER_BOOK_ID = 1002L;
+
     @Mock
     BookRepository bookRepository;
     @InjectMocks
     BookServiceImpl bookService;
-
-    long MOCK_BOOK_ID = 1001L;
-    long MOCK_OTHER_BOOK_ID = 1002L;
-
-    private static Book buildBook1(Long id){
-        Book book1 = new Book("Book1 Title", "Book1 Author", "Book1 ISBN", 340, 2);
-        book1.setId(id);
-        return book1;
-    }
-
-    private Book buildBook2(Long id){
-        Book book2 = new Book("Book2 Title", "Book2 Author", "Book2 ISBN", 430, 1);
-        book2.setId(id);
-        return book2;
-    }
 
     @Test
     void addBookShouldAddBookSuccessfully(){
@@ -54,10 +45,8 @@ class BookServiceTest {
             return book;
         });
 
-        Long bookId = bookService.addBook(book);
-
-        assertEquals(MOCK_BOOK_ID, bookId);
-        verify(bookRepository).save(book);
+        assertThat(bookService.addBook(book)).isEqualTo(MOCK_BOOK_ID);
+        verify(bookRepository).save(ArgumentMatchers.same(book));
     }
 
     @Test
@@ -82,23 +71,11 @@ class BookServiceTest {
 
     @Test
     void getAllBooksShouldGetAllBooksSuccessfully(){
-        List<Book> books = new ArrayList<>();
-        Book book1 = buildBook1(MOCK_BOOK_ID);
-        Book book2 = buildBook2(MOCK_OTHER_BOOK_ID);
-        books.add(book1);
-        books.add(book2);
+        List<Book> books = List.of(buildBook1(MOCK_BOOK_ID), buildBook2(MOCK_OTHER_BOOK_ID));
         when(bookRepository.findAll()).thenReturn(books);
 
-        List<Book> booksReturned = bookService.getAllBooks();
+        assertThat(bookService.getAllBooks()).isEqualTo(books);
 
-        assertEquals(books.size(), booksReturned.size());
-        for(int i = 0; i < books.size(); i++){
-            assertEquals(books.get(i).getId(), booksReturned.get(i).getId());
-            assertEquals(books.get(i).getAvailableCopies(), booksReturned.get(i).getAvailableCopies());
-            assertEquals(books.get(i).getTitle(), booksReturned.get(i).getTitle());
-            assertEquals(books.get(i).getAuthor(), booksReturned.get(i).getAuthor());
-            assertEquals(books.get(i).getPrice(), booksReturned.get(i).getPrice());
-        }
         verify(bookRepository).findAll();
     }
 
@@ -112,7 +89,7 @@ class BookServiceTest {
         bookService.updateBook(updatedBook, MOCK_BOOK_ID);
 
         assertEquals(MOCK_BOOK_ID, updatedBook.getId());
-        verify(bookRepository).save(updatedBook);
+        verify(bookRepository).save(ArgumentMatchers.same(updatedBook));
         verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
@@ -132,13 +109,8 @@ class BookServiceTest {
         Book book = buildBook1(MOCK_BOOK_ID);
         when(bookRepository.findById(anyLong())).thenReturn(Optional.of(book));
 
-        Book bookReturned = bookService.getBook(MOCK_BOOK_ID);
+        assertThat(bookService.getBook(MOCK_BOOK_ID)).isEqualTo(book);
 
-        assertEquals(book.getId(), bookReturned.getId());
-        assertEquals(book.getAvailableCopies(), bookReturned.getAvailableCopies());
-        assertEquals(book.getTitle(), bookReturned.getTitle());
-        assertEquals(book.getAuthor(), bookReturned.getAuthor());
-        assertEquals(book.getPrice(), bookReturned.getPrice());
         verify(bookRepository).findById(MOCK_BOOK_ID);
     }
 
@@ -149,6 +121,19 @@ class BookServiceTest {
         assertThrows(BookNotFoundException.class, () -> bookService.getBook(MOCK_BOOK_ID));
 
         verify(bookRepository).findById(MOCK_BOOK_ID);
+    }
+
+
+    private static Book buildBook1(Long id){
+        Book book1 = new Book("Book1 Title", "Book1 Author", "Book1 ISBN", 340, 2);
+        book1.setId(id);
+        return book1;
+    }
+
+    private Book buildBook2(Long id){
+        Book book2 = new Book("Book2 Title", "Book2 Author", "Book2 ISBN", 430, 1);
+        book2.setId(id);
+        return book2;
     }
 
 }
